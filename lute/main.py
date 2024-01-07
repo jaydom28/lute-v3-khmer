@@ -18,6 +18,7 @@ from lute.config.app_config import AppConfig
 
 logging.getLogger("waitress.queue").setLevel(logging.ERROR)
 logging.getLogger("natto").setLevel(logging.CRITICAL)
+logging.getLogger("default").setLevel(logging.INFO)
 
 
 def _print(s):

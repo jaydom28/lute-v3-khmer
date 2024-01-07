@@ -69,6 +69,7 @@ INSERT INTO languages VALUES(10,'Russian','https://www.dict.com/Russian-English/
 INSERT INTO languages VALUES(11,'Sanskrit','https://dsal.uchicago.edu/cgi-bin/app/sanskrit_query.py?qs=###&searchhws=yes&matchtype=default','https://www.learnsanskrit.cc/translate?search=###&dir=se','https://translate.google.com/?hl=en&sl=sa&tl=en&text=###&op=translate','´=''|`=''|’=''|‘=''|...=…|..=‥','.?!।॥','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-Z\u0900-\u0963\u0966-\u097F',0,0,0,1,'spacedel');
 INSERT INTO languages VALUES(12,'Spanish','https://es.thefreedictionary.com/###','https://www.wordreference.com/es/en/translation.asp?spen=###','*https://www.deepl.com/translator#es/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,0,0,'spacedel');
 INSERT INTO languages VALUES(13,'Turkish','https://www.wordreference.com/tren/###','https://tr.wiktionary.org/###','*https://www.deepl.com/translator#tr/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑğĞıİöÖüÜşŞçÇ',0,0,0,1,'turkish');
+INSERT INTO languages VALUES(14,'Khmer','*https://glosbe.com/km/en/###','*https://www.kheng.info/search/?query=###','*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate','´=''|`=''|’=''|‘=''|...=…|..=‥','។?៕','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','ក-៹',0,0,0,1,'khmer');
 CREATE TABLE IF NOT EXISTS "statuses" (
 	"StID" INTEGER NOT NULL  ,
 	"StText" VARCHAR(20) NOT NULL  ,
@@ -191,6 +192,7 @@ INSERT INTO books VALUES(11,6,'Die Bremer Stadtmusikanten',NULL,0,0,174,NULL,NUL
 INSERT INTO books VALUES(12,5,'Boucles d’or et les trois ours',NULL,0,0,69,NULL,NULL,NULL);
 INSERT INTO books VALUES(13,9,'北風と太陽 - きたかぜたいよう',NULL,0,0,64,NULL,NULL,NULL);
 INSERT INTO books VALUES(14,8,'Universal Declaration of Human Rights',NULL,0,0,35,NULL,NULL,NULL);
+INSERT INTO books VALUES(15,14,'សមាគមមិត្តភាពវៀតណាម-កម្ពុជា បន្តខិតខំប្រឹងប្រែងរួមចំណែកក្នុងទំនាក់ទំនងវៀតណាម-កម្ពុជា',NULL,0,0,35,NULL,NULL,NULL);
 CREATE TABLE IF NOT EXISTS "wordparents" (
 	"WpWoID" INTEGER NOT NULL  ,
 	"WpParentWoID" INTEGER NOT NULL  ,
@@ -228,6 +230,10 @@ INSERT INTO texts VALUES(19,11,1,replace('Es hatte ein Mann einen Esel, der scho
 INSERT INTO texts VALUES(20,12,1,replace('Il était une fois trois ours: un papa ours, une maman ours et un bébé ours. Ils habitaient tous ensemble dans une maison jaune au milieu d''une grande forêt.\n\nUn jour, Maman Ours prépara une grande marmite de porridge délicieux et fumant pour le petit déjeuner. Il était trop chaud pour pouvoir être mangé, alors les ours décidèrent d''aller se promener en attendant que le porridge refroidisse.','\n',char(10)),NULL,NULL);
 INSERT INTO texts VALUES(21,13,1,replace('北風と太陽\n\n「おれの方が強い。」「いいや、ぼくの方が強い。」\n北風と太陽の声が聞こえます。二人はどちらの力が強いかでケンカをしているようです。\n「太陽が毎日元気だから、暑くてみんな困っているよ。おれが涼しい風を吹くと、みんな嬉しそうだ。」','\n',char(10)),NULL,NULL);
 INSERT INTO texts VALUES(22,14,1,'अनुच्छेद १(एक): सभी मनुष्य जन्म से स्वतन्त्र तथा मर्यादा और अधिकारों में समान होते हैं। वे तर्क और विवेक से सम्पन्न हैं तथा उन्हें भ्रातृत्व की भावना से परस्पर के प्रति कार्य करना चाहिए।',NULL,NULL);
+INSERT INTO texts VALUES(23,15,1,'សមាគមមិត្តភាពវៀតណាម-កម្ពុជា (VCFA) បានបើកកិច្ចប្រជុំលើកទី៣ នៃគណៈកម្មាធិការមជ្ឈិមរបស់ខ្លួនក្នុងអាណត្តិទី៥ (២០២១ – ២០២៦) នៅខេត្ត Ninh Binh ភាគខាងជើង នាថ្ងៃទី៦ ខែមករា ដើម្បីពិនិត្យលទ្ធផលការងាររបស់ខ្លួនក្នុងឆ្នាំ២០២៣ និងដាក់ចេញភារកិច្ចសម្រាប់ឆ្នាំថ្មីនេះ។
+
+កិច្ចប្រជុំនេះប្រព្រឹត្តទៅក្រោមអធិបតីភាពលោកស្រី Nguyen Thi Thanh ប្រធាន VCFA ដែលជាសមាជិកគណៈកម្មាធិការអចិន្ត្រៃយ៍រដ្ឋសភា ប្រធានក្រុមប្រឹក្សាកិច្ចការអ្នកតំណាងនៅគណៈកម្មាធិការអចិន្ត្រៃយ៍ និងអនុប្រធានគណៈកម្មាធិការរៀបចំនៃគណៈកម្មាធិការមជ្ឈិមបក្ស។
+ក្នុងសុន្ទរកថាស្វាគមន៍ ប្រធានគណៈកម្មាធិការប្រជាជនខេត្ត Ninh Binh លោក Pham Quang Ngoc បានឲ្យដឹងថា ក្នុងនាមជាសមាជិកសកម្មនៃសម្ព័ន្ធអង្គការមិត្តភាពវៀតណាម VCFA បានរួមចំណែកយ៉ាងសំខាន់ក្នុងការលើកកម្ពស់ទំនាក់ទំនងមិត្តភាពជាប្រពៃណី និងកិច្ចសហប្រតិបត្តិការលើគ្រប់វិស័យវៀតណាម-កម្ពុជា។',NULL,NULL);
 CREATE TABLE IF NOT EXISTS "settings" (
 	"StKey" VARCHAR(40) NOT NULL,
         "StKeyType" TEXT NOT NULL,
