@@ -1,8 +1,8 @@
 name: Khmer
-dict_1: https://chinese.yabla.com/chinese-english-pinyin-dictionary.php?define=###
-dict_2: https://www.bing.com/images/search?q=###&form=HDRSC2&first=1&tsc=ImageHoverTitle
-sentence_translation: "*https://www.deepl.com/translator#ch/en/###"
-show_romanization: false
+dict_1: "*https://glosbe.com/km/en/###"
+dict_2: "*https://www.kheng.info/search/?query=###"
+sentence_translation: "*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate"
+show_romanization: true
 # right_to_left:
 
 parser_type: khmer
