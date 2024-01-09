@@ -7,23 +7,23 @@
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/CzFUQP5m8u)
 
 
-This repo contains the source code for Lute v3.  Lute (Learning Using Texts) v3 is a full rewrite in Python and Flask of the original [Lute v1 and v2](https://github.com/jzohrab/lute) PHP project.
+This repo contains code to add support for Khmer parsing to the original lutev3 project [here](https://github.com/jzohrab/lute-v3).
 
 ![Lute v3 demo](https://github.com/jzohrab/lute-manual/assets/1637133/7e7f5f66-20bb-4e94-a11c-7b7ffc43255a)
 
-# Getting Started
+# Starting the project in developer mode
+This fork is still an infant and I don't recommend using your own database with it. I also at the moment only know how to run it in developer mode.
 
-## Users
-
-To learn more about Lute v3, or to install it for your own use and study, please see the [Lute v3 manual](https://jzohrab.github.io/lute-manual/).  Hop onto the [Discord](https://discord.gg/CzFUQP5m8u) too.
-
-## Developing
-
-For more information on building and developing, please see [Development](./docs/development.md).
-
-## Contributing
-
-If you'd like to contribute code to Lute (hooray!), check out the [Contribution Guidelines](./docs/contributing.md).  And with every repo star, an angel gets its wings.
+1. You should first go to the project root and activate your python environment
+2. Next create a config file that uses a data directory other than your personal lute data directory
+```bash
+$ bash create_config.sh
+```
+3. Start the developer server
+```bash
+$ python -m devstart # will use port 5000 by default
+$ python -m devstart --port 5050 # use some other port if you are already running lute
+```
 
 # License
 
