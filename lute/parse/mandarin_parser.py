@@ -24,10 +24,17 @@ from lute.parse.user_dicts import load_from_db, load_from_file
 log_util.enable_debug(False)
 
 
-CHINESE_PUNCTUATIONS = (
-    r"！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏.\n"
-)
+# CHINESE_PUNCTUATIONS = (
+#     r"！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏.\n"
+# )
 
+
+PUNCTUATION_LIST = [
+    " ", "　", ",", "，", ".", "。", "!", "?", ";", "、", "~", "|", "·", ":", "+", "\-", "—", "*", "/", "／", "\\", "%",
+    "=", "\"", "'", "（", "）", "(", ")", "\[", "\]", "【", "】", "{", "}", "《", "》", "→", "←", "↑", "↓", "↖", "↗", "↙",
+    "↘", "$", "%", "_", "#", "@", "&", "√", "X", "♂", "♡", "♿", "⭐", "❤", "■", "⭕",
+    "✂", "✈", "█", "ð", "▓", "ж", "⛽", "☞", "♥", "☯", "⚽", "☺", "㊙", "✨", "＊", "✌", "⚡", "⛷", "✊", "☔", "✌", "░"
+]
 
 class MandarinParser(AbstractParser):
     """
@@ -98,7 +105,7 @@ class MandarinParser(AbstractParser):
         para_result = []
         MandarinParser._seg.dict_force = self.user_dict
         for tok in MandarinParser._seg(para_text):
-            is_word = tok not in CHINESE_PUNCTUATIONS
+            is_word = tok not in PUNCTUATION_LIST
             _pinyin = ""
             if is_word:
                 _pinyin_list = list(chain.from_iterable(pinyin(tok)))
