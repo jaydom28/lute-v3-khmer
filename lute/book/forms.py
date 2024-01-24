@@ -4,7 +4,7 @@ Book create/edit forms.
 
 import json
 from flask import request
-from wtforms import StringField, SelectField, TextAreaField
+from wtforms import StringField, SelectField, TextAreaField, IntegerField
 from wtforms import ValidationError
 from wtforms.validators import DataRequired, Length
 from flask_wtf import FlaskForm
@@ -45,6 +45,7 @@ class NewBookForm(FlaskForm):
         ],
     )
     book_tags = StringField("Tags")
+    max_page_tokens = IntegerField("Words per page(include punctuations)",default=250)
 
     def __init__(self, *args, **kwargs):
         "Call the constructor of the superclass (FlaskForm)"
