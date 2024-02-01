@@ -34,6 +34,11 @@ class NewBookForm(FlaskForm):
             )
         ],
     )
+    max_page_tokens = IntegerField(
+        "Words per page",
+        validators=[NumberRange(min=10, max=1500)],
+        default=250,
+    )
     source_uri = StringField("Text source", validators=[Length(max=255)])
     audiofile = FileField(
         "Audio file",

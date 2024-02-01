@@ -154,10 +154,15 @@ div#divbooktable {
 a.book-title:before {
     content: '';
     display: inline-block;
-    width: 16px;
-    height: 16px;
-    vertical-align: baseline;
-    margin-right: 8px;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+/* flex fixes wrapping issue */
+.book-title {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: flex-start;
 }
 
 /* show a check mark for completed books */
@@ -170,6 +175,32 @@ a.completed_book:before {
   */
 table#booktable:not(:has(a.completed_book)) a.book-title:before {
     display: none;
+}
+
+.refresh {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background-image: url("../icn/reload.png");
+    background-size: 80%;
+    border-radius: 2px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    vertical-align: middle;
+    margin-left: 0.5rem;
+}
+
+.refresh:hover {
+    background-color: #dadada;
+}
+
+.refresh:active {
+    background-color: #9f9f9f;
+}
+
+.refreshed {
+    background-image: url("../icn/waiting2.gif");
 }
 
 /* End book listing */
@@ -933,8 +964,8 @@ div.code pre {
 #mecab_path, 
 #custom_styles,
 #language input,
-#importurl {
-    /* width: 100%; */
+#importurl,
+#comment {
     font-size: 0.9rem;
     font-family: inherit;
     padding: 0.2rem 0.2rem;
@@ -942,7 +973,6 @@ div.code pre {
     border-radius: var(--form-border-radius);
     box-sizing: border-box;
 }
-
 
 /* GENERAL FORM STYLES */
 input,
@@ -956,8 +986,34 @@ textarea {
     resize: vertical;
 }
 
+/* focus on fields makes border same as tags */
+input:focus,
+textarea:focus,
+select:focus {
+    border: 1px solid var(--tagify__tag-bg) !important;
+    outline: none !important;
+}
+
+input[type="checkbox"]:focus,
+input[type="file"]:focus,
+button:focus {
+    outline: 1px solid var(--tagify__tag-bg) !important;
+}
+
+input[type="checkbox"]:focus,
+input[type="file"]:focus {
+    border: none !important;
+}
+
 ::placeholder {
     font-family: inherit;
+    font-size: 0.8rem;
+    color: #D8D8D8;
+    opacity: 0.7;
+}
+
+:focus::placeholder {
+    opacity: 1;
 }
 
 .btn {
@@ -1278,7 +1334,8 @@ input[type="checkbox"][disabled] + label {
 #parser_type,
 #language_id,
 #txtSetParent,
-#predefined {
+#predefined,
+#max_page_tokens {
     width: 8rem;
     box-sizing: border-box;
     border: 1px solid var(--form-border-color);
@@ -1477,4 +1534,71 @@ input[type="checkbox"][disabled] + label {
     table#term {
         width: 100% !important;
     }
+}
+
+
+/* status stats */
+
+.status-bar-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 100%;
+    border-radius: 3px;
+    box-sizing: border-box;
+    background-color: #787878;
+    border: 1px solid #787878;
+}
+
+#booktable td:has(.status-bar-container) {
+    padding-right: 1.5rem;
+}
+
+.status-bar-container-empty {
+    border-color: #e6e6e6;
+    background-color: #fff;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    height: 0.7rem;
+    font-size: 0.8rem;
+    box-sizing: border-box;
+    /* saturate the colors  */
+    filter: saturate(2.4) brightness(0.95); 
+}
+
+.status-bar0 {
+    background-color: var(--status-0-color);
+}
+
+.status-bar1 {
+    background-color: var(--status-1-color);
+}
+
+.status-bar2 {
+    background-color: var(--status-2-color);
+}
+
+.status-bar3 {
+    background-color: var(--status-3-color);
+}
+
+.status-bar4 {
+    background-color: var(--status-4-color);
+}
+
+.status-bar5 {
+    background-color: var(--status-5-color);
+}
+
+.status-bar99 {
+    background-color: var(--status-99-color);
+    filter: saturate(1.4);
+}
+
+#booktable td {
+    vertical-align: middle;
 }

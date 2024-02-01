@@ -10,23 +10,15 @@ from lute.read.service import (
 )
 from lute.parse.user_dicts import update_user_dict
 from lute.read.forms import TextForm
+from lute.read.service import start_reading
 from lute.term.model import Repository, find_lang
 from lute.term.routes import handle_term_form
 from lute.models.book import Book, Text
 from lute.models.term import Term as DBTerm
 from lute.models.setting import UserSetting
-from lute.book.stats import mark_stale
 from lute.db import db
 
-
 bp = Blueprint("read", __name__, url_prefix="/read")
-
-
-def _page_in_range(book, n):
-    "Return the page number respecting the page range."
-    ret = max(n, 1)
-    ret = min(ret, book.page_count)
-    return ret
 
 
 def _render_book_page(book, pagenum):
@@ -82,7 +74,7 @@ def read_page(bookid, pagenum):
         flash(f"No book matching id {bookid}")
         return redirect("/", 302)
 
-    pagenum = _page_in_range(book, pagenum)
+    pagenum = book.page_in_range(pagenum)
     return _render_book_page(book, pagenum)
 
 
@@ -95,8 +87,7 @@ def page_done():
     restknown = data.get("restknown")
 
     book = Book.find(bookid)
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
+    text = book.text_at_page(pagenum)
     text.read_date = datetime.now()
     db.session.add(text)
     db.session.commit()
@@ -118,23 +109,6 @@ def save_player_data():
     return jsonify("ok")
 
 
-@bp.route("/preloadpage/<int:bookid>/<int:pagenum>", methods=["GET"])
-def preload_page(bookid, pagenum):
-    "Method called by ajax, just for cache"
-    book = Book.find(bookid)
-    if book is None:
-        flash(f"No book matching id {bookid}")
-        return ""
-
-    pagenum = _page_in_range(book, pagenum)
-    # for cache
-    # page_num_next = _page_in_range(book, pagenum + 1)
-    # get_paragraphs(book.texts[page_num_next])
-    text = book.texts[pagenum - 1]
-    paragraphs = get_paragraphs(text)
-    return ""
-
-
 @bp.route("/renderpage/<int:bookid>/<int:pagenum>", methods=["GET"])
 def render_page(bookid, pagenum):
     "Method called by ajax, render the given page."
@@ -142,16 +116,7 @@ def render_page(bookid, pagenum):
     if book is None:
         flash(f"No book matching id {bookid}")
         return redirect("/", 302)
-
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
-
-    mark_stale(book)
-    book.current_tx_id = text.id
-    db.session.add(book)
-    db.session.commit()
-
-    paragraphs = get_paragraphs(text)
+    paragraphs = start_reading(book, pagenum, db.session)
     return render_template("read/page_content.html", paragraphs=paragraphs)
 
 
@@ -166,15 +131,13 @@ def term_form(langid, text):
     """
     Create or edit a term.
     """
-    lemma = request.args.get("lemma", default=None, type=str)
-
-    reading = request.args.get("reading", default=None, type=str) or request.form.get(
-        "romanization", None
-    )
-    tokens_raw = request.args.get("textparts", None)
-
     repo = Repository(db)
-    term = repo.find_or_new(langid, text, None, reading)
+    reading = request.args.get("reading", default=None, type=str) or request.form.get(
+        "romanization", ""
+    )
+    if reading.replace("None", "").replace("・", "").strip() == "":
+        reading = ""
+    term = repo.find_or_new(langid, text,None,reading)
 
     return handle_term_form(
         term,
@@ -182,7 +145,6 @@ def term_form(langid, text):
         "/read/frameform.html",
         render_template("/read/updated.html", term_text=term.text),
         embedded_in_reading_frame=True,
-        tokens_raw=tokens_raw,
     )
 
 
@@ -242,8 +204,7 @@ def flashcopied():
 def edit_page(bookid, pagenum):
     "Edit the text on a page."
     book = Book.find(bookid)
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
+    text = book.text_at_page(pagenum)
     if text is None:
         return redirect("/", 302)
     form = TextForm(obj=text)

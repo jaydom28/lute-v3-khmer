@@ -3,16 +3,24 @@ Book statistics.
 """
 
 import json
-from lute.read.service import get_paragraphs
+from lute.read.render.service import get_paragraphs
 from lute.db import db
 from lute.models.book import Book
+
+
+def _last_5_pages(book, txindex):
+    "Get next 5 pages, or at least 5 pages."
+    start_index = max(0, txindex - 5)
+    end_index = txindex + 5
+    texts = book.texts[start_index:end_index]
+    return texts[-5:]
 
 
 def get_status_distribution(book):
     """
     Return statuses and count of unique words per status.
 
-    Does a full render of the next 20 pages in a book
+    Does a full render of a small number of pages
     to calculate the distribution.
     """
     txindex = 0
@@ -23,12 +31,12 @@ def get_status_distribution(book):
                 break
             txindex += 1
 
-    paras = [
-        get_paragraphs(t)
-        for t in
-        # Next 20 pages, a good enough sample.
-        book.texts[txindex : txindex + 20]
-    ]
+    # get next 5 pages, a good enough sample ...
+    # min 5 pages.
+    text_sample = [t.text for t in _last_5_pages(book, txindex)]
+    text_sample = "\n".join(text_sample)
+
+    paras = get_paragraphs(text_sample, book.language)
 
     def flatten_list(nested_list):
         result = []
@@ -68,7 +76,6 @@ class BookStats(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     BkID = db.Column(db.Integer)
-    wordcount = db.Column(db.Integer)
     distinctterms = db.Column(db.Integer)
     distinctunknowns = db.Column(db.Integer)
     unknownpercent = db.Column(db.Integer)
@@ -109,18 +116,17 @@ def _get_stats(book):
 
     # Any change in the below fields requires a change to
     # update_stats as well, query insert doesn't check field order.
-    return [book.word_count or 0, allunique, unknowns, percent, sd]
+    return [allunique, unknowns, percent, sd]
 
 
 def _update_stats(book, stats):
     "Update BookStats for the given book."
     new_stats = BookStats(
         BkID=book.id,
-        wordcount=stats[0],
-        distinctterms=stats[1],
-        distinctunknowns=stats[2],
-        unknownpercent=stats[3],
-        status_distribution=stats[4],
+        distinctterms=stats[0],
+        distinctunknowns=stats[1],
+        unknownpercent=stats[2],
+        status_distribution=stats[3],
     )
     db.session.add(new_stats)
     db.session.commit()

@@ -41,6 +41,8 @@ INSERT INTO _migrations VALUES('20231210_103924_add_book_audio_fields.sql');
 INSERT INTO _migrations VALUES('20240101_122610_add_bookstats_status_distribution.sql');
 INSERT INTO _migrations VALUES('20240118_154258_change_status_abbrev.sql');
 INSERT INTO _migrations VALUES('20240113_215142_add_term_follow_parent_bool.sql');
+INSERT INTO _migrations VALUES('20240125_drop_BkWordCount.sql');
+INSERT INTO _migrations VALUES('20240125_drop_bookstats_wordcount.sql');
 CREATE TABLE IF NOT EXISTS "languages" (
 	"LgID" INTEGER NOT NULL  ,
 	"LgName" VARCHAR(40) NOT NULL  ,
@@ -71,7 +73,6 @@ INSERT INTO languages VALUES(10,'Russian','https://www.dict.com/Russian-English/
 INSERT INTO languages VALUES(11,'Sanskrit','https://dsal.uchicago.edu/cgi-bin/app/sanskrit_query.py?qs=###&searchhws=yes&matchtype=default','https://www.learnsanskrit.cc/translate?search=###&dir=se','https://translate.google.com/?hl=en&sl=sa&tl=en&text=###&op=translate','´=''|`=''|’=''|‘=''|...=…|..=‥','.?!।॥','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-Z\u0900-\u0963\u0966-\u097F',0,0,0,1,'spacedel');
 INSERT INTO languages VALUES(12,'Spanish','https://es.thefreedictionary.com/###','https://www.wordreference.com/es/en/translation.asp?spen=###','*https://www.deepl.com/translator#es/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,0,0,'spacedel');
 INSERT INTO languages VALUES(13,'Turkish','https://www.wordreference.com/tren/###','https://tr.wiktionary.org/###','*https://www.deepl.com/translator#tr/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑğĞıİöÖüÜşŞçÇ',0,0,0,1,'turkish');
-INSERT INTO languages VALUES(14,'Mandarin','https://chinese.yabla.com/chinese-english-pinyin-dictionary.php?define=###','https://www.bing.com/images/search?q=###&form=HDRSC2&first=1&tsc=ImageHoverTitle','*https://www.deepl.com/translator#ch/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?。！？','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','一-龥',0,0,0,1,'mandarin');
 CREATE TABLE IF NOT EXISTS "statuses" (
 	"StID" INTEGER NOT NULL  ,
 	"StText" VARCHAR(20) NOT NULL  ,
@@ -120,29 +121,6 @@ CREATE TABLE IF NOT EXISTS "sentences" (
 	PRIMARY KEY ("SeID"),
 	FOREIGN KEY("SeTxID") REFERENCES "texts" ("TxID") ON UPDATE NO ACTION ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS "bookstats" (
-	"BkID" INTEGER NOT NULL  ,
-	"wordcount" INTEGER NULL  ,
-	"distinctterms" INTEGER NULL  ,
-	"distinctunknowns" INTEGER NULL  ,
-	"unknownpercent" INTEGER NULL  , status_distribution VARCHAR(100) NULL,
-	PRIMARY KEY ("BkID"),
-	FOREIGN KEY("BkID") REFERENCES "books" ("BkID") ON UPDATE NO ACTION ON DELETE CASCADE
-);
-INSERT INTO bookstats VALUES(1,67,57,57,100,'{"0": 57, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(2,45,33,33,100,'{"0": 33, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(3,382,170,170,100,'{"0": 170, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(4,83,63,63,100,'{"0": 63, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(5,48,40,40,100,'{"0": 40, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(6,1241,370,370,100,'{"0": 370, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(7,646,246,246,100,'{"0": 246, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(8,157,99,99,100,'{"0": 99, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(9,115,100,100,100,'{"0": 100, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(10,110,85,85,100,'{"0": 85, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(11,174,120,120,100,'{"0": 120, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(12,69,49,49,100,'{"0": 49, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(13,64,41,41,100,'{"0": 41, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(14,35,30,30,100,'{"0": 30, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
 CREATE TABLE IF NOT EXISTS "wordimages" (
 	"WiID" INTEGER NOT NULL  ,
 	"WiWoID" INTEGER NOT NULL  ,
@@ -170,31 +148,6 @@ CREATE TABLE IF NOT EXISTS "words" (
 	"WoStatusChanged" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, WoSyncStatus INTEGER NOT NULL DEFAULT 0,
 	FOREIGN KEY("WoLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS "books" (
-	"BkID" INTEGER NOT NULL  ,
-	"BkLgID" INTEGER NOT NULL  ,
-	"BkTitle" VARCHAR(200) NOT NULL  ,
-	"BkSourceURI" VARCHAR(1000) NULL  ,
-	"BkArchived" TINYINT NOT NULL DEFAULT '0' ,
-	"BkCurrentTxID" INTEGER NOT NULL DEFAULT '0' , BkWordCount INT, BkAudioFilename TEXT NULL, BkAudioCurrentPos REAL NULL, BkAudioBookmarks TEXT NULL,
-	PRIMARY KEY ("BkID"),
-	FOREIGN KEY("BkLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
-);
-INSERT INTO books VALUES(1,3,'Hrad Cimburk – Jak vzal vítr pasáčkovi čepici',NULL,0,0,67,NULL,NULL,NULL);
-INSERT INTO books VALUES(2,11,'बुद्धिमान् शिष्यः',NULL,0,0,45,NULL,NULL,NULL);
-INSERT INTO books VALUES(3,2,'逍遙遊',NULL,0,0,382,NULL,NULL,NULL);
-INSERT INTO books VALUES(4,12,'Aladino y la lámpara maravillosa',NULL,0,0,83,NULL,NULL,NULL);
-INSERT INTO books VALUES(5,10,'медведь',NULL,0,0,48,NULL,NULL,NULL);
-INSERT INTO books VALUES(6,4,'Tutorial',NULL,0,0,1241,NULL,NULL,NULL);
-INSERT INTO books VALUES(7,4,'Tutorial follow-up',NULL,0,0,646,NULL,NULL,NULL);
-INSERT INTO books VALUES(8,7,'Γεια σου, Νίκη. Ο Πέτρος είμαι.',NULL,0,0,157,NULL,NULL,NULL);
-INSERT INTO books VALUES(9,1,'Examples',NULL,0,0,115,NULL,NULL,NULL);
-INSERT INTO books VALUES(10,13,'Büyük ağaç',NULL,0,0,110,NULL,NULL,NULL);
-INSERT INTO books VALUES(11,6,'Die Bremer Stadtmusikanten',NULL,0,0,174,NULL,NULL,NULL);
-INSERT INTO books VALUES(12,5,'Boucles d’or et les trois ours',NULL,0,0,69,NULL,NULL,NULL);
-INSERT INTO books VALUES(13,9,'北風と太陽 - きたかぜたいよう',NULL,0,0,64,NULL,NULL,NULL);
-INSERT INTO books VALUES(14,8,'Universal Declaration of Human Rights',NULL,0,0,35,NULL,NULL,NULL);
-INSERT INTO books VALUES(15,14,'珍珠鸟','',0,23,649,NULL,NULL,NULL);
 CREATE TABLE IF NOT EXISTS "wordparents" (
 	"WpWoID" INTEGER NOT NULL  ,
 	"WpParentWoID" INTEGER NOT NULL  ,
@@ -232,9 +185,6 @@ INSERT INTO texts VALUES(19,11,1,replace('Es hatte ein Mann einen Esel, der scho
 INSERT INTO texts VALUES(20,12,1,replace('Il était une fois trois ours: un papa ours, une maman ours et un bébé ours. Ils habitaient tous ensemble dans une maison jaune au milieu d''une grande forêt.\n\nUn jour, Maman Ours prépara une grande marmite de porridge délicieux et fumant pour le petit déjeuner. Il était trop chaud pour pouvoir être mangé, alors les ours décidèrent d''aller se promener en attendant que le porridge refroidisse.','\n',char(10)),NULL,NULL);
 INSERT INTO texts VALUES(21,13,1,replace('北風と太陽\n\n「おれの方が強い。」「いいや、ぼくの方が強い。」\n北風と太陽の声が聞こえます。二人はどちらの力が強いかでケンカをしているようです。\n「太陽が毎日元気だから、暑くてみんな困っているよ。おれが涼しい風を吹くと、みんな嬉しそうだ。」','\n',char(10)),NULL,NULL);
 INSERT INTO texts VALUES(22,14,1,'अनुच्छेद १(एक): सभी मनुष्य जन्म से स्वतन्त्र तथा मर्यादा और अधिकारों में समान होते हैं। वे तर्क और विवेक से सम्पन्न हैं तथा उन्हें भ्रातृत्व की भावना से परस्पर के प्रति कार्य करना चाहिए।',NULL,NULL);
-INSERT INTO texts VALUES(23,15,1,replace('珍珠鸟\n冯骥才\n\n真好！朋友送我一对珍珠鸟，我把它们养在一个竹条编的笼子里。笼子里有一团干草，那是小鸟又舒适又温暖的巢。\n\n有人说，这是一种害怕人的鸟。\n\n我把笼子挂在窗前。那儿有一盆茂盛的法国吊兰。我让吊兰的长满绿叶的藤蔓覆盖在鸟笼上，珍珠鸟就像躲进幽深的丛林一样安全，从中传出的笛儿般又细又亮的叫声，也就格外轻松自在了。\n\n阳光射进窗来，把吊兰的一串串小叶照得如同碧玉。小鸟的影子就在这中间隐约闪动，看不完整，有时连笼子也看不出，却见它们可爱的鲜红小嘴儿从绿叶中伸出来。\n\n我很少扒开叶蔓瞧它们，它们便渐渐敢伸出小脑袋瞅瞅我。我们就这样一点点熟悉了。\n\n三个月后，那一团愈发繁茂的藤蔓里边，发出一种尖细又娇嫩的叫声。我猜到，是它们有了雏儿。我呢？决不掀开叶片往里看，连添食加水时也不睁大好奇的眼睛去惊动它们。过不多久，忽然有一个小脑袋从叶间探出来。正是它们的雏儿！','\n',char(10)),NULL,NULL);
-INSERT INTO texts VALUES(24,15,2,replace('这个小家伙能轻易地由笼子里钻出身。瞧，多么像它的母亲：红嘴红脚，灰蓝色的毛，只是后背还没有生出珍珠似的圆圆的白点。它好肥，整个身子好像一个蓬松的球儿。\n\n起先，这小家伙只在笼子四周活动，随后就在屋里飞来飞去，一会儿落在柜顶上，一会儿神气十足地站在书架上，啄着书背上那些大文豪的名字；一会儿把灯绳撞得来回摇动，跟着又跳到画框上去了。只要大鸟在笼子里叫一声，它立即飞回笼里去。\n\n我不管它。就是打开窗子，它最多只在窗框上站一会儿，决不飞出去。\n\n渐渐地，它胆子大了，有时落在我的书桌上。\n\n它先是离我较远，见我不去伤害它，便一点点挨近，然后蹦到我的杯子上，低下头来喝茶，再偏过脸瞧瞧我的反应。我只是微微一笑，依旧写东西，它就放开胆子跑到稿纸上，绕着我的笔尖蹦来蹦去，跳动的小红爪子在纸上发出嚓嚓的响声。\n\n我不动声色地写，默默享受着这小家伙亲近的情意。这样，它完全放心了。','\n',char(10)),NULL,NULL);
-INSERT INTO texts VALUES(25,15,3,replace('索性用那涂了蜡似的、角质的小红嘴，“嗒嗒”啄着我颤动的笔尖。我用手摸一摸它细腻的绒毛，它也不怕，反而友好地啄两下我的手指。\n\n白天，它这样淘气地陪伴我；天色暗下来，它就在父母的再三呼唤中，飞向笼子，扭动滚圆的身子，挤开那些绿叶钻进去。\n\n有一天，我伏案写作时，它居然落到我的肩上。我手中的笔不觉停了，生怕吓跑它。过了一会儿，扭头看看，这小家伙竟扒在我的肩头上睡着了，银灰色的眼皮盖住眼睛，小红脚刚好给胸脯上长长的绒毛盖住。我轻轻抬一抬肩，它没醒，睡得好熟！还咂咂嘴，难道在做梦？\n\n我笔尖一动，写下一时的感受：\n\n信赖，往往创造出美好的境界。','\n',char(10)),NULL,NULL);
 CREATE TABLE IF NOT EXISTS "settings" (
 	"StKey" VARCHAR(40) NOT NULL,
         "StKeyType" TEXT NOT NULL,
@@ -242,6 +192,56 @@ CREATE TABLE IF NOT EXISTS "settings" (
 	PRIMARY KEY ("StKey")
 );
 INSERT INTO settings VALUES('IsDemoData','system','1');
+CREATE TABLE IF NOT EXISTS "books" (
+	"BkID" INTEGER NOT NULL  ,
+	"BkLgID" INTEGER NOT NULL  ,
+	"BkTitle" VARCHAR(200) NOT NULL  ,
+	"BkSourceURI" VARCHAR(1000) NULL  ,
+	"BkArchived" TINYINT NOT NULL DEFAULT '0' ,
+	"BkCurrentTxID" INTEGER NOT NULL DEFAULT '0',
+        BkAudioFilename TEXT NULL,
+        BkAudioCurrentPos REAL NULL,
+        BkAudioBookmarks TEXT NULL,
+	PRIMARY KEY ("BkID"),
+	FOREIGN KEY("BkLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+INSERT INTO books VALUES(1,3,'Hrad Cimburk – Jak vzal vítr pasáčkovi čepici',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(2,11,'बुद्धिमान् शिष्यः',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(3,2,'逍遙遊',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(4,12,'Aladino y la lámpara maravillosa',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(5,10,'медведь',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(6,4,'Tutorial',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(7,4,'Tutorial follow-up',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(8,7,'Γεια σου, Νίκη. Ο Πέτρος είμαι.',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(9,1,'Examples',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(10,13,'Büyük ağaç',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(11,6,'Die Bremer Stadtmusikanten',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(12,5,'Boucles d’or et les trois ours',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(13,9,'北風と太陽 - きたかぜたいよう',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(14,8,'Universal Declaration of Human Rights',NULL,0,0,NULL,NULL,NULL);
+CREATE TABLE IF NOT EXISTS "bookstats" (
+	"BkID" INTEGER NOT NULL  ,
+	"distinctterms" INTEGER NULL  ,
+	"distinctunknowns" INTEGER NULL  ,
+	"unknownpercent" INTEGER NULL  ,
+        status_distribution VARCHAR(100) NULL,
+	PRIMARY KEY ("BkID"),
+	FOREIGN KEY("BkID") REFERENCES "books" ("BkID") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+INSERT INTO bookstats VALUES(1,57,57,100,'{"0": 57, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(2,33,33,100,'{"0": 33, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(3,170,170,100,'{"0": 170, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(4,63,63,100,'{"0": 63, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(5,40,40,100,'{"0": 40, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(6,359,359,100,'{"0": 359, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(7,246,246,100,'{"0": 246, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(8,99,99,100,'{"0": 99, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(9,100,100,100,'{"0": 100, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(10,85,85,100,'{"0": 85, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(11,120,120,100,'{"0": 120, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(12,49,49,100,'{"0": 49, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(13,41,41,100,'{"0": 41, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(14,30,30,100,'{"0": 30, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
 CREATE UNIQUE INDEX "LgName" ON "languages" ("LgName");
 CREATE UNIQUE INDEX "TgText" ON "tags" ("TgText");
 CREATE UNIQUE INDEX "T2Text" ON "tags2" ("T2Text");
@@ -256,9 +256,10 @@ CREATE INDEX "WoStatusChanged" ON "words" ("WoStatusChanged");
 CREATE INDEX "WoTextLC" ON "words" ("WoTextLC");
 CREATE UNIQUE INDEX "WoTextLCLgID" ON "words" ("WoTextLC", "WoLgID");
 CREATE INDEX "WoTokenCount" ON "words" ("WoTokenCount");
-CREATE INDEX "BkLgID" ON "books" ("BkLgID");
 CREATE UNIQUE INDEX "wordparent_pair" ON "wordparents" ("WpWoID", "WpParentWoID");
+CREATE INDEX "BkLgID" ON "books" ("BkLgID");
 CREATE TRIGGER trig_wordparents_after_insert_update_parent_WoStatus_if_following
+-- created by db/schema/migrations_repeatable/trig_wordparents.sql
 AFTER INSERT ON wordparents
 BEGIN
     UPDATE words
@@ -273,8 +274,10 @@ BEGIN
       WHERE WoSyncStatus = 1
       AND WoID = new.WpWoID
     );
-END;
+END
+;
 CREATE TRIGGER trig_wordparents_after_delete_change_WoSyncStatus
+-- created by db/schema/migrations_repeatable/trig_wordparents.sql
 BEFORE DELETE ON wordparents
 FOR EACH ROW
 BEGIN
@@ -285,17 +288,10 @@ BEGIN
       select WpWoID from wordparents
       where WpParentWoID = old.WpParentWoID
     );
-END;
-CREATE TRIGGER trig_words_update_WoStatusChanged
-AFTER UPDATE OF WoStatus ON words
-FOR EACH ROW
-WHEN old.WoStatus <> new.WoStatus
-BEGIN
-    UPDATE words
-    SET WoStatusChanged = CURRENT_TIMESTAMP
-    WHERE WoID = NEW.WoID;
-END;
+END
+;
 CREATE TRIGGER trig_words_after_update_WoStatus_if_following_parent
+-- created by db/schema/migrations_repeatable/trig_words.sql
 AFTER UPDATE OF WoStatus, WoSyncStatus ON words
 FOR EACH ROW
 WHEN (old.WoStatus <> new.WoStatus or (old.WoSyncStatus = 0 and new.WoSyncStatus = 1))
@@ -324,6 +320,17 @@ BEGIN
       group by WpWoID
       having count(*) = 1
     );
+END
+;
+CREATE TRIGGER trig_words_update_WoStatusChanged
+-- created by db/schema/migrations_repeatable/trig_words.sql
+AFTER UPDATE OF WoStatus ON words
+FOR EACH ROW
+WHEN old.WoStatus <> new.WoStatus
+BEGIN
+    UPDATE words
+    SET WoStatusChanged = CURRENT_TIMESTAMP
+    WHERE WoID = NEW.WoID;
 END
 ;
 COMMIT;
