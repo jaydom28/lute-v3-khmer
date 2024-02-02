@@ -23,7 +23,6 @@ from lute.parse.user_dicts import load_from_db, load_from_file
 
 log_util.enable_debug(False)
 
-
 # CHINESE_PUNCTUATIONS = (
 #     r"！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏.\n"
 # )
@@ -36,6 +35,7 @@ PUNCTUATION_LIST = [
     "✂", "✈", "█", "ð", "▓", "ж", "⛽", "☞", "♥", "☯", "⚽", "☺", "㊙", "✨", "＊", "✌", "⚡", "⛷", "✊", "☔", "✌", "░"
 ]
 
+
 class MandarinParser(AbstractParser):
     """
     Using hanlp to parse the Mandarin
@@ -46,6 +46,7 @@ class MandarinParser(AbstractParser):
         self.user_dict = {}
         self.dict_loaded = False
         self._cache = {}
+        self.dict_changed = False
 
     def full_load_dict(self, language):
         if self.dict_loaded:
@@ -54,21 +55,23 @@ class MandarinParser(AbstractParser):
         ud = load_from_db(language)
         udf = load_from_file(language)
         ud.update(udf)
-    # else:
+        # else:
         #     od = load_from_file(language)
 
         self.reload_dict(ud)
         self.dict_loaded = True
+        self.dict_changed = True
 
     def reload_dict(self, dict_set):
         if dict_set:
             self.user_dict = dict_set
+            self.dict_changed = True
             # MandarinParser._seg.dict_force = dict_set.copy()
 
     def update_dict(self, od=None):
         if od:
             self.user_dict.update(od)
-            # MandarinParser._seg.dict_force = self.user_dict.copy()
+            self.dict_changed = True
 
     @classmethod
     @lru_cache()
@@ -86,9 +89,9 @@ class MandarinParser(AbstractParser):
             is_supported = True
 
         return is_supported
-    def get_hashable(self):
-        return tuple((k,tuple(v)) for k,v in self.user_dict.items())
 
+    def get_hashable(self):
+        return tuple((k, tuple(v)) for k, v in self.user_dict.items())
 
     @classmethod
     def name(cls):
@@ -96,14 +99,17 @@ class MandarinParser(AbstractParser):
 
     @cached(
         cache={},
-        key=lambda self, para_text : hashkey(self.get_hashable(), para_text)
+        key=lambda self, para_text: hashkey(self.get_hashable(), para_text)
     )
     def parse_para(self, para_text):
         """
         Parsing the paragraph
         """
         para_result = []
-        MandarinParser._seg.dict_force = self.user_dict
+        if self.dict_changed:
+            MandarinParser._seg.dict_force = self.user_dict
+            self.dict_changed = False
+
         for tok in MandarinParser._seg(para_text):
             is_word = tok not in PUNCTUATION_LIST
             _pinyin = ""
@@ -115,7 +121,7 @@ class MandarinParser(AbstractParser):
 
     @cached(
         cache={},
-        key=lambda self, para_text,*args: hashkey(self.get_hashable(), para_text)
+        key=lambda self, para_text, *args: hashkey(self.get_hashable(), para_text)
     )
     def get_parsed_tokens(self, text: str, language) -> List:
         """

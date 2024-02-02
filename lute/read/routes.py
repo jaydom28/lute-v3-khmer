@@ -138,6 +138,7 @@ def term_form(langid, text):
     if reading.replace("None", "").replace("・", "").strip() == "":
         reading = ""
     term = repo.find_or_new(langid, text,None,reading)
+    tokens_raw= request.args.get("textparts", default=None, type=str)
 
     return handle_term_form(
         term,
@@ -145,6 +146,7 @@ def term_form(langid, text):
         "/read/frameform.html",
         render_template("/read/updated.html", term_text=term.text),
         embedded_in_reading_frame=True,
+        tokens_raw=tokens_raw
     )
 
 
