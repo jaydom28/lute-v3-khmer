@@ -118,6 +118,7 @@ class AbstractParser(ABC):
     """
     Abstract parser, inherited from by all parsers.
     """
+    using_user_dict=False
 
     @classmethod
     def is_supported(cls):
@@ -159,17 +160,10 @@ class AbstractParser(ABC):
         """
         return text.lower()
 
-    def is_dict_loaded(self):
-        return True
-
-    def load_dict(self, dict_set):
-        pass
 
     def update_dict(self, tokens):
         pass
 
-    def get_user_dict(self):
-        return dict()
 
     def delete_from_user_dict(self, k, v):
         pass

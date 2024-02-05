@@ -29,6 +29,8 @@ def load_from_db(language):
 
 
 def load_from_file(language):
+    if not language.parser.using_user_dict:
+        return {}
     dict_path = get_dict_path(language)
     if not os.path.exists(dict_path) or os.stat(dict_path).st_size < 2:
         f = open(dict_path, "w", encoding="utf-8")
@@ -46,12 +48,6 @@ def load_from_file(language):
     return odf
 
 
-def _write_ud_to_file(ud, dict_path):
-    res = []
-    for _, v in ud.items():
-        res.append(",".join(v))
-    with open(dict_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(res))
 
 
 def get_dict_path(language):

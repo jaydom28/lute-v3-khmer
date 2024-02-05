@@ -40,6 +40,7 @@ class MandarinParser(AbstractParser):
     """
     Using hanlp to parse the Mandarin
     """
+    using_user_dict = True
 
     def __init__(self):
         super().__init__()
@@ -66,7 +67,7 @@ class MandarinParser(AbstractParser):
         if dict_set:
             self.user_dict = dict_set
             self.dict_changed = True
-            # MandarinParser._seg.dict_force = dict_set.copy()
+            # MandarinParser._seg.dict_force = dict_set
 
     def update_dict(self, od=None):
         if od:
