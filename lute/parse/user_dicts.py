@@ -10,6 +10,8 @@ ZWS = "\u200B"
 
 
 def get_terms_from_db(language):
+    if language.id is None:
+        language.id =1
     terms = db.session.query(Term).filter(
         Term.language == language,
         Term.token_count > 1,
