@@ -15,7 +15,7 @@ This is modified version of [Lute](https://github.com/jzohrab/lute-v3), it suppo
 
 At first, you should Install Python and [activate virtual environment](./README_PyPi.md)
 
-After the virtual environment activated, you could using  command
+After the virtual environment activated, you could use  command
 
 ```
 pip install https://github.com/fanyingfx/lute-v3/releases/download/3.1.2b1/lute3-3.1.2b1-py3-none-any.whl --upgrade
