@@ -34,15 +34,16 @@
         $('div.ui-tooltip', context).remove();
 
         repel.load(url, function() {
-          // console.log(`adding class kwordmarked to id ${marked_id}`);
+          // console.log(`adding hover class to id ${marked_id}`);
           const re_marked = $(`#${marked_id}`, context);
-          re_marked.removeClass('wordhover');
-          re_marked.addClass('kwordmarked');
+          re_marked.removeClass('kwordmarked');
+          re_marked.addClass('wordhover');
         });
       };
 
       $(document).ready(function() {
-        top.frames.dictframe.location.href = '/read/empty';
+        const dictContainer = parent.document.querySelector(".dictcontainer");
+        dictContainer.style.display = "none";
         reload_updated_text_div();
         $('#flash').delay(1000).fadeOut();
       });

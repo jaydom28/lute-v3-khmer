@@ -27,6 +27,7 @@ def _render_book_page(book, pagenum):
     """
     lang = book.language
     show_highlights = bool(int(UserSetting.get_value("show_highlights")))
+    term_dicts = lang.all_dictionaries()[lang.id]["term"]
 
     return render_template(
         "read/index.html",
@@ -34,10 +35,12 @@ def _render_book_page(book, pagenum):
         is_rtl=lang.right_to_left,
         html_title=book.title,
         book=book,
-        dictionary_url=lang.sentence_translate_uri,
+        sentence_dict_uris=lang.sentence_dict_uris,
         page_num=pagenum,
         page_count=book.page_count,
         show_highlights=show_highlights,
+        lang_id=lang.id,
+        term_dicts=term_dicts,
     )
 
 
@@ -217,4 +220,7 @@ def edit_page(bookid, pagenum):
         db.session.commit()
         return redirect(f"/read/{book.id}", 302)
 
-    return render_template("read/page_edit_form.html", hide_top_menu=True, form=form)
+    text_dir = "rtl" if book.language.right_to_left else "ltr"
+    return render_template(
+        "read/page_edit_form.html", hide_top_menu=True, form=form, text_dir=text_dir
+    )

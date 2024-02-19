@@ -5,15 +5,9 @@
  */
 let LUTE_CURR_TERM_DATA_ORDER = -1;  // initially not set.
 
-/**
- * Lute has 2 different "modes" when reading:
- * - LUTE_HOVERING = true: Hover mode, not selecting
- * - LUTE_HOVERING = false: Word clicked, or click-drag
- */ 
-let LUTE_HOVERING = true;
 
 /**
- * When the reading pane is first loaded, it is set in "hover mode",
+ * When the reading pane is first loaded, it's in "hover mode",
  * meaning that when the user hovers over a word, that word becomes
  * the "active word" -- i.e., status update keyboard shortcuts should
  * operate on that hovered word, and as the user moves the mouse
@@ -28,9 +22,6 @@ let LUTE_HOVERING = true;
  * this method on reload to reset the cursor etc.
  */
 function start_hover_mode(should_clear_frames = true) {
-  // console.log('CALLING RESET');
-  LUTE_HOVERING = true;
-
   $('span.kwordmarked').removeClass('kwordmarked');
 
   const curr_word = $('span.word').filter(function() {
@@ -44,7 +35,7 @@ function start_hover_mode(should_clear_frames = true) {
 
   if (should_clear_frames) {
     $('#wordframeid').attr('src', '/read/empty');
-    $('#dictframeid').attr('src', '/read/empty');
+    $('.dictcontainer').hide();
   }
 
   clear_newmultiterm_elements();
@@ -192,7 +183,8 @@ function hover_over_add_status_class(e) {
 
 function hover_over(e) {
   $('span.wordhover').removeClass('wordhover');
-  if (LUTE_HOVERING) {
+  const marked_count = $('span.kwordmarked').toArray().length;
+  if (marked_count == 0) {
     $(this).addClass('wordhover');
     save_curr_data_order($(this));
   }
@@ -242,7 +234,6 @@ let clear_newmultiterm_elements = function() {
 }
 
 function select_started(e) {
-  LUTE_HOVERING = false;
   clear_newmultiterm_elements();
   $(this).addClass('newmultiterm');
   selection_start_el = $(this);
@@ -365,11 +356,8 @@ let copy_text_to_clipboard = function(textitemspans) {
 
 
 let move_cursor = function(shiftby) {
-  // Use the first clicked element, or the hovered if none clicked.
-  let elements = $('span.kwordmarked, span.newmultiterm');
-  let hovered_els = $('span.wordhover');
-  if (elements.length == 0 && hovered_els.length > 0)
-    elements = hovered_els;
+  // Cursor is set to the first clicked or hovered element.
+  let elements = $('span.kwordmarked, span.newmultiterm, span.wordhover');
   elements.sort((a, b) => _get_order($(a)) - _get_order($(b)));
   const curr = (elements.length == 0) ? null : elements[0];
 
@@ -390,6 +378,7 @@ let move_cursor = function(shiftby) {
   // Adjust all screen state.
   $('span.newmultiterm').removeClass('newmultiterm');
   $('span.kwordmarked').removeClass('kwordmarked');
+  $('span.wordhover').removeClass('wordhover');
   remove_status_highlights();
   target.addClass('kwordmarked');
   save_curr_data_order(target);
@@ -399,21 +388,62 @@ let move_cursor = function(shiftby) {
 }
 
 
-let show_translation = function(e) {
+/** SENTENCE TRANSLATIONS *************************/
+
+// LUTE_SENTENCE_LOOKUP_URIS is rendered in templates/read/index.html.
+// Hitting "t" repeatedly cycles through the uris.  Moving to a new
+// sentence resets the order.
+
+var LUTE_LAST_SENTENCE_TRANSLATION_TEXT = '';
+var LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX = 0;
+
+/** Cycle through the LUTE_SENTENCE_LOOKUP_URIS.
+ * If the current sentence is the same as the last translation,
+ * move to the next sentence dictionary; otherwise start the cycle
+ * again (from index 0).
+ */
+let _get_translation_dict_index = function(sentence) {
+  const dict_count = LUTE_SENTENCE_LOOKUP_URIS.length;
+  if (dict_count == 0)
+    return 0;
+  let new_index = LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX;
+  if (LUTE_LAST_SENTENCE_TRANSLATION_TEXT != sentence) {
+    // New sentence, start at beginning.
+    new_index = 0;
+  }
+  else {
+    // Same sentence, next dict.
+    new_index += 1;
+    if (new_index >= dict_count)
+      new_index = 0;
+  }
+  LUTE_LAST_SENTENCE_TRANSLATION_TEXT = sentence;
+  LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX = new_index;
+  return new_index;
+}
+
+
+/** Show the translation using the next dictionary. */
+let show_sentence_translation = function(e) {
   tis = get_textitems_spans(e);
   if (tis == null)
     return;
   const sentence = tis.map(s => $(s).data('text')).join('');
 
-  const userdict = $('#translateURL').text();
-  if (userdict == null || userdict == '')
-    console.log('No userdict for lookup.  ???');
+  if (LUTE_SENTENCE_LOOKUP_URIS.length == 0) {
+    console.log('No sentence translation uris configured.');
+    return;
+  }
 
+  const dict_index = _get_translation_dict_index(sentence);
+  const userdict = LUTE_SENTENCE_LOOKUP_URIS[dict_index];
   // console.log(userdict);
-  const url = userdict.replace('###', encodeURIComponent(sentence));
+
+  const lookup = encodeURIComponent(sentence);
+  const url = userdict.replace('###', lookup);
   if (url[0] == '*') {
     const finalurl = url.substring(1);  // drop first char.
-    const settings = 'width=800, height=400, scrollbars=yes, menubar=no, resizable=yes, status=no';
+    const settings = 'width=800, height=600, scrollbars=yes, menubar=no, resizable=yes, status=no';
     window.open(finalurl, 'dictwin', settings);
   }
   else {
@@ -422,6 +452,7 @@ let show_translation = function(e) {
 }
 
 
+/** THEMES AND HIGHLIGHTS *************************/
 /* Change to the next theme, and reload the page. */
 function next_theme() {
   $.ajax({
@@ -444,6 +475,12 @@ function next_theme() {
 
 }
 
+function toggleFocus() {
+  const focusChk = document.getElementById("focus");
+  const event = new Event("change");
+  focusChk.checked = !focusChk.checked;
+  focusChk.dispatchEvent(event);
+}
 
 /* Toggle highlighting, and reload the page. */
 function toggle_highlight() {
@@ -505,6 +542,7 @@ function handle_keydown (e) {
   const kT = 84; // T)ranslate
   const kM = 77; // The(M)e
   const kH = 72; // Toggle H)ighlight
+  const kF = 70; // Toggle F)ocus mode
   const kP = 80; // Toggle P)ronunciation
   const k1 = 49;
   const k2 = 50;
@@ -536,9 +574,10 @@ function handle_keydown (e) {
   map[kUP] = () => increment_status_for_selected_elements(e, +1);
   map[kDOWN] = () => increment_status_for_selected_elements(e, -1);
   map[kC] = () => handle_copy(e);
-  map[kT] = () => show_translation(e);
+  map[kT] = () => show_sentence_translation(e);
   map[kM] = () => next_theme();
   map[kH] = () => toggle_highlight();
+  map[kF] = () => toggleFocus();
   map[kP] = () => toggle_reading();
   map[k1] = () => update_status_for_marked_elements(1);
   map[k2] = () => update_status_for_marked_elements(2);
@@ -658,23 +697,17 @@ function post_bulk_update(updates) {
 
 
 /**
- * Change status using arrow keys for *select* (clicked) elements only,
- * *not* hovered elements.
- *
- * When hovering, clicking an arrow should just scroll the screen, because
- * the user is *kind of passively* viewing content.
- * If the user has clicked on an element (or used arrow keys), they're actively
- * focused on it.
+ * Change status using arrow keys for selected or hovered elements.
  */
 function increment_status_for_selected_elements(e, shiftBy) {
-  const elements = Array.from(document.querySelectorAll('span.kwordmarked'));
-  if (elements.length == 0)
-    return;
-
   // Don't scroll screen.  If screen scrolling happens, then pressing
   // "up" will both scroll up *and* change the status the selected term,
   // which is odd.
   e.preventDefault();
+
+  const elements = Array.from(document.querySelectorAll('span.kwordmarked, span.wordhover'));
+  if (elements.length == 0)
+    return;
 
   const statuses = ['status0', 'status1', 'status2', 'status3', 'status4', 'status5', 'status99'];
 
