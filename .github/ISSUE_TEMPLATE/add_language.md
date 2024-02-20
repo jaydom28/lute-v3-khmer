@@ -2,7 +2,7 @@
 name: Add a language
 about: Fill in a form with data to request adding a new language to Lute's demos
 title: 'Add language: [name]'
-labels: 'enhancement'
+labels: enhancement
 assignees: ''
 
 ---
