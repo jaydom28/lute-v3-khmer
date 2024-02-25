@@ -1,7 +1,16 @@
 name: Khmer
 dict_1: "*https://glosbe.com/km/en/###"
 dict_2: "*https://www.kheng.info/search/?query=###"
-sentence_translation: "*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate"
+dictionaries:
+  - for: terms
+    type: embedded
+    url:  "*https://glosbe.com/km/en/###"
+  - for: terms
+    type: embedded
+    url: "*https://www.kheng.info/search/?query=###"
+  - for: sentences
+    type: embedded
+    url:  "*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate"
 show_romanization: true
 # right_to_left:
 
