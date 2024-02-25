@@ -25,6 +25,19 @@ Feature: Creating and managing terms
             ; bb; ; thing; Spanish; ; New (1)
 
 
+    Scenario: Can Export CSV file
+        Given a new Spanish term:
+            text: gato
+            translation: cat
+        Then the term table contains:
+            ; gato; ; cat; Spanish; ; New (1)
+        When click Export CSV
+        And sleep for 1
+        Then exported CSV file contains:
+            term,parent,translation,language,tags,status,link_status
+            gato,,cat,Spanish,,1,
+
+
     Scenario: Import a valid term file
         Given import term file:
             language,term,translation,parent,status,tags,pronunciation
@@ -44,5 +57,6 @@ Feature: Creating and managing terms
             ; 爱好; ; hobby; Classical Chinese; HSK1; New (1)
 
 
-# TODO zzfuture fix: testing scenarios: term filters.
-# TODO zzfuture fix: testing scenarios: bulk set parents.
+# TODO term testing scenarios: term filters.
+# TODO term testing scenarios: bulk set parents.
+# TODO term testing scenarios: bulk delete.

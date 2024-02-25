@@ -4,10 +4,13 @@ Read service tests.
 
 from lute.models.term import Term
 from lute.parse.base import ParsedToken
-from lute.read.service import find_all_Terms_in_string, get_paragraphs
+from lute.book.model import Book, Repository
+from lute.read.render.service import find_all_Terms_in_string, get_paragraphs
+from lute.read.service import start_reading
 from lute.db import db
 
 from tests.utils import add_terms, make_text, assert_rendered_text_equals
+from tests.dbasserts import assert_record_count_equals
 
 
 def _run_scenario(language, content, expected_found):
@@ -86,7 +89,7 @@ def test_smoke_get_paragraphs(spanish, app_context):
     db.session.commit()
 
     ParsedToken.reset_counters()
-    paras = get_paragraphs(t)
+    paras = get_paragraphs(t.text, t.book.language)
     assert len(paras) == 2
 
     def stringize(t):
@@ -123,3 +126,39 @@ def test_smoke_rendered(spanish, app_context):
 
     expected = ["Tengo un(1)/ gato(1)/. /Hay/ /un/ /perro/.", "Tengo un(1)/ /perro/."]
     assert_rendered_text_equals(text, expected)
+
+
+def test_rendered_leaves_blank_lines(spanish, app_context):
+    """
+    Smoke test to get paragraph information.
+    """
+    add_terms(spanish, ["tengo un", "un gato"])
+    content = ["Tengo un gato. Hay un perro.", "", "Tengo un perro."]
+    text = make_text("Hola", "\n".join(content), spanish)
+    db.session.add(text)
+    db.session.commit()
+
+    expected = [
+        "Tengo un(1)/ gato(1)/. /Hay/ /un/ /perro/.",
+        "",
+        "Tengo un(1)/ /perro/.",
+    ]
+    assert_rendered_text_equals(text, expected)
+
+
+## Start reading tests. ##########################
+
+
+def test_smoke_start_reading(english, app_context):
+    "Smoke test book."
+    b = Book()
+    b.title = "blah"
+    b.language_id = english.id
+    b.text = "Here is some content.  Here is more."
+    r = Repository(db)
+    dbbook = r.add(b)
+    r.commit()
+
+    assert_record_count_equals("select * from sentences", 0, "before start")
+    start_reading(dbbook, 1, db.session)
+    assert_record_count_equals("select * from sentences", 2, "after start")

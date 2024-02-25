@@ -5,14 +5,13 @@ import logging
 
 from datetime import datetime
 from flask import Blueprint, flash, request, render_template, redirect, jsonify
-from lute.read.service import get_paragraphs, set_unknowns_to_known
+from lute.read.service import set_unknowns_to_known, start_reading
 from lute.read.forms import TextForm
 from lute.term.model import Repository
 from lute.term.routes import handle_term_form
 from lute.models.book import Book, Text
 from lute.models.term import Term as DBTerm
 from lute.models.setting import UserSetting
-from lute.book.stats import mark_stale
 from lute.db import db
 
 
@@ -22,19 +21,13 @@ LOGGER = logging.getLogger("default")
 LOGGER.setLevel(logging.INFO)
 
 
-def _page_in_range(book, n):
-    "Return the page number respecting the page range."
-    ret = max(n, 1)
-    ret = min(ret, book.page_count)
-    return ret
-
-
 def _render_book_page(book, pagenum):
     """
     Render a particular book page.
     """
     lang = book.language
     show_highlights = bool(int(UserSetting.get_value("show_highlights")))
+    term_dicts = lang.all_dictionaries()[lang.id]["term"]
 
     return render_template(
         "read/index.html",
@@ -42,10 +35,12 @@ def _render_book_page(book, pagenum):
         is_rtl=lang.right_to_left,
         html_title=book.title,
         book=book,
-        dictionary_url=lang.sentence_translate_uri,
+        sentence_dict_uris=lang.sentence_dict_uris,
         page_num=pagenum,
         page_count=book.page_count,
         show_highlights=show_highlights,
+        lang_id=lang.id,
+        term_dicts=term_dicts,
     )
 
 
@@ -82,7 +77,7 @@ def read_page(bookid, pagenum):
         flash(f"No book matching id {bookid}")
         return redirect("/", 302)
 
-    pagenum = _page_in_range(book, pagenum)
+    pagenum = book.page_in_range(pagenum)
     return _render_book_page(book, pagenum)
 
 
@@ -95,8 +90,7 @@ def page_done():
     restknown = data.get("restknown")
 
     book = Book.find(bookid)
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
+    text = book.text_at_page(pagenum)
     text.read_date = datetime.now()
     db.session.add(text)
     db.session.commit()
@@ -125,16 +119,7 @@ def render_page(bookid, pagenum):
     if book is None:
         flash(f"No book matching id {bookid}")
         return redirect("/", 302)
-
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
-
-    mark_stale(book)
-    book.current_tx_id = text.id
-    db.session.add(book)
-    db.session.commit()
-
-    paragraphs = get_paragraphs(text)
+    paragraphs = start_reading(book, pagenum, db.session)
     return render_template("read/page_content.html", paragraphs=paragraphs)
 
 
@@ -217,8 +202,7 @@ def flashcopied():
 def edit_page(bookid, pagenum):
     "Edit the text on a page."
     book = Book.find(bookid)
-    pagenum = _page_in_range(book, pagenum)
-    text = book.texts[pagenum - 1]
+    text = book.text_at_page(pagenum)
     if text is None:
         return redirect("/", 302)
     form = TextForm(obj=text)
@@ -229,4 +213,7 @@ def edit_page(bookid, pagenum):
         db.session.commit()
         return redirect(f"/read/{book.id}", 302)
 
-    return render_template("read/page_edit_form.html", hide_top_menu=True, form=form)
+    text_dir = "rtl" if book.language.right_to_left else "ltr"
+    return render_template(
+        "read/page_edit_form.html", hide_top_menu=True, form=form, text_dir=text_dir
+    )

@@ -275,6 +275,8 @@ def import_term_file(luteclient, content):
         # do stuff with temp file
         tmp.write(content)
     luteclient.browser.attach_file("text_file", path)
+    luteclient.browser.find_by_id("create_terms").click()
+    luteclient.browser.find_by_id("update_terms").click()
     luteclient.browser.find_by_id("btnSubmit").click()
 
 
@@ -288,6 +290,18 @@ def check_term_table(luteclient, content):
     if content == "-":
         content = "No data available in table"
     assert content == luteclient.get_term_table_content()
+
+
+@when("click Export CSV")
+def click_export_csv(luteclient):
+    "Export the term csv"
+    luteclient.browser.find_by_css("#term_actions").mouse_over()
+    luteclient.click_link("Export CSV")
+
+
+@then(parsers.parse("exported CSV file contains:\n{content}"))
+def check_exported_file(luteclient, content):
+    assert content == luteclient.get_temp_file_content("export_terms.csv").strip()
 
 
 # Reading

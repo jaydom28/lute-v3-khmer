@@ -38,7 +38,7 @@
       <td>Status range</td>
       <td>
         <select id="filtStatusMin">
-          <option value=0></option>
+          <option value=0>(all)</option>
           <option value=1>New (1)</option>
           <option value=2>New (2)</option>
           <option value=3>Learn (3)</option>
@@ -48,7 +48,7 @@
         </select>
         to
         <select id="filtStatusMax">
-          <option value=0></option>
+          <option value=0>(all)</option>
           <option value=1>New (1)</option>
           <option value=2>New (2)</option>
           <option value=3>Learn (3)</option>
@@ -69,11 +69,23 @@
   <br />
 </div>
 
-<div style="margin-top: 10px; margin-bottom: 10px;">
-  <a href="/term/new">Create new</a>
-  &nbsp;|&nbsp;
-  Set parent: <input id="txtSetParent" disabled /><button id="btnSetParent" disabled >go</button>
+
+<div class="term-action-container">
+  <div id="term_actions" class="term-action-dropdown" onmouseover="activate_term_actions();">
+    <button class="term-action-button">Actions</button>
+    <div class="term-action-content">
+      <a href="/term/new">Create new</a>
+      <a id="term_action_set_parent" href="#" onclick="show_hide_set_parent(event);">Set parent</a>
+      <a id="term_action_bulk_delete" href="#" onclick="bulk_delete(event);">Delete selected</a>
+      <a id="term_action_export_csv" href="#" onclick="export_csv(event);">Export CSV</a>
+    </div>
+  </div>
+
+  <div id="set_parent_div" style="display: none;">
+    <p>Set parent: <input id="txtSetParent" disabled /><button id="btnSetParent" disabled >go</button></p>
+  </div>
 </div>
+
 
 <table id="termtable" class="table dataTable stripe">
   <thead>
@@ -99,23 +111,16 @@
       responsive: true,
       select: true,
       lengthMenu: [ 25, 50, 100, 500, 1000 ],
+
+      // The button is included but the div.dt-buttons is hidden,
+      // so that the button actions can be trigged by a link
+      // in the "Actions" list.
       buttons: [
          {
-           extend: 'csvHtml5',
+           extend: 'download',
+           url: '/term/export_terms',
            text: 'Export CSV',
-           exportOptions: {
-             columns: [
-               'WoText:name',
-               'ParentText:name',
-               'WoTranslation:name',
-               'LgName:name',
-               'TagList:name',
-               'StText:name',
-               'WoID:name',
-               'LgID:name',
-             ], visible: false
-           },
-         }
+         },
       ],
       paging: true,
       info: true,
@@ -125,41 +130,22 @@
       stateSave: true,
       search: { search: initial_search },
       columnDefs: [
-        {
-          // "chk" is included in the underlying SQL query.
-          // Without it, datatables would place the values
-          // in the wrong table columns.  Ugly hack, but works.
-          "name": "chk",
-          "targets": 0,
-          "searchable": false, "orderable": false, "data": null,
-          "render": function (data, type, row, meta) {
-            return `<input type="checkbox" class="chkWord" name="wordids" wordid="${row[7]}" langid="${row[8]}" onclick="handleChkClick()">`;
-          }
-        },
-
-        { "name": "WoText", "targets": 1,
-          "render": function ( data, type, row, meta ) {
-            return `<a href="/term/edit/${row[7]}">${row[1]}</a>`;
-          }
-        },
+        // "chk" is included in the underlying SQL query.
+        // Without it, datatables would place the values
+        // in the wrong table columns.  Ugly hack, but works.
+        { "name": "chk", "targets": 0, "searchable": false, "orderable": false, "data": null, "render": render_checkbox },
+        { "name": "WoText", "targets": 1, "render": render_text },
         { "name": "ParentText", "targets": 2 },
-        { "name": "WoTranslation", "targets": 3, width: "40%",
-          "render": function ( data, type, row, meta ) {
-            let tx = row[3] ?? '';
-            let imgsrc = row[9] ?? '';
-            if (imgsrc != '')
-              imgsrc = `<img style="margin-top: 5px;" src="${imgsrc}" />`;
-            let ret = [ tx, imgsrc ].filter((s) => s != '');
-            return ret.join('<br />');
-          },
-          "searchable": false, "orderable": false,
-        },
+        { "name": "WoTranslation", "targets": 3, width: "40%", "searchable": true, "render": render_translation },
         { "name": "LgName", "targets": 4 },
         { "name": "TagList", "targets": 5 },
-        { "name": "StText", "targets": 6 },
+        { "name": "StID", "targets": 6, "render": render_status },
         { "name": "WoID", "targets": 7, "visible": false },
         { "name": "LgID", "targets": 8, "visible": false },
         { "name": "WiSource", "targets": 9, "visible": false },
+        { "name": "StAbbreviation", "targets": 10, "visible": false },
+        { "name": "SyncStatus", "targets": 11, "visible": false },
+        { "name": "StText", "targets": 12, "visible": false },
       ],
 
       // Ajax call
@@ -188,6 +174,32 @@
   } // end setup_term_datatable
 
 
+  let render_text = function ( data, type, row, meta ) {
+    return `<a href="/term/edit/${row[7]}">${row[1]}</a>`;
+  };
+
+  // Use the status ID for sorting, so Well Known comes after Learned (5),
+  // but use the status text ("New (1)") for the cell display.
+  let render_status = function ( data, type, row, meta ) {
+    return row[12];
+  };
+
+  let render_checkbox = function (data, type, row, meta) {
+    return `<input type="checkbox" class="chkWord" name="wordids" wordid="${row[7]}" langid="${row[8]}" onclick="handleChkClick()">`;
+  };
+
+
+  let render_translation = function ( data, type, row, meta ) {
+    let tx = row[3] ?? '';
+    tx = tx.replaceAll("\r\n", "<br />");
+    let imgsrc = row[9] ?? '';
+    if (imgsrc != '')
+      imgsrc = `<img style="margin-top: 5px;" src="${imgsrc}" />`;
+    let ret = [ tx, imgsrc ].filter((s) => s != '');
+    return ret.join('<br />');
+  };
+
+
   let handleChkAll = function() {
     const v = $('#chkAll').prop('checked');
     $('.chkWord').each(function(i) {
@@ -206,6 +218,32 @@
     $("#btnSetParent").prop('disabled', disabled);
   }
 
+
+  /** Deactivate term Actions, activate if they're possible. */
+  function activate_term_actions() {
+    const disabled = "actionDisabled";
+    const checked_count = $('.chkWord:checked').length;
+    const lang_id = get_lang_id();
+
+    let c = $("#term_action_bulk_delete");
+    c.addClass(disabled);
+    if (checked_count > 0)
+      c.removeClass(disabled);
+
+    c = $("#term_action_set_parent");
+    c.addClass(disabled);
+    if (checked_count > 0 && lang_id != null)
+      c.removeClass(disabled);
+  }
+
+
+  function show_hide_set_parent(event) {
+    event.preventDefault();
+    if ($("#term_action_set_parent").hasClass("actionDisabled"))
+      return;
+    $("#set_parent_div").css("display", "flex");
+    $("#txtSetParent").focus();
+  }
 
   // Return the clicked checkboxes' language ID,
   // or null if the lang id isn't the same for all.
@@ -292,6 +330,52 @@
   };
 
 
+  function bulk_delete(event) {
+    event.preventDefault();
+    if ($("#term_action_bulk_delete").hasClass("actionDisabled"))
+      return;
+    const checked = $('.chkWord:checked');
+    const ids = checked.toArray().map(el => parseInt($(el).attr('wordid')));
+    const t = (ids.length == 1) ? 'term' : 'terms';
+    const resp = confirm(`Deleting ${ids.length} ${t}.  Continue?`);
+    if (! resp)
+      return;
+
+    data = {
+      wordids: ids
+    };
+    $.ajax({
+      url: '/term/bulk_delete',
+      method: 'POST',
+      data: JSON.stringify(data),
+      contentType: "application/json; charset=utf-8",
+      success: function(data) {
+        location.reload();
+      }
+    });
+  }
+
+
+  /** Click the export button.
+   * I'm doing this so that the Datatables "export" extension button
+   * works out of the box, but the actual call to export the CSV
+   * is in the "Actions" list.
+   */
+  function export_csv(event) {
+    event.preventDefault();
+    /*
+    // TODO export_csv: only export selected/checked terms?
+    const checked = $('.chkWord:checked');
+    const ids = checked.toArray().map(el => parseInt($(el).attr('wordid')));
+    */
+    const export_button = $('.dt-button:contains("Export CSV")');
+    if (export_button.length === 0) {
+      throw new Error("Export CSV button not found");
+    }
+    export_button.click();
+  };
+
+
   let handle_filter_update = function() {
     const store = {
       filtLanguage: $('#filtLanguage').val(),
@@ -311,7 +395,7 @@
 
   let load_filters_from_storage = function() {
     fs = sessionStorage.getItem('termtable_filters');
-    console.log(fs);
+    // console.log(fs);
     if (fs == null)
       return;
     store = JSON.parse(fs);

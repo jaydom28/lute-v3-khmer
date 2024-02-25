@@ -70,6 +70,12 @@ INSERT INTO languages VALUES(11,'Sanskrit','https://dsal.uchicago.edu/cgi-bin/ap
 INSERT INTO languages VALUES(12,'Spanish','https://es.thefreedictionary.com/###','https://www.wordreference.com/es/en/translation.asp?spen=###','*https://www.deepl.com/translator#es/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,0,0,'spacedel');
 INSERT INTO languages VALUES(13,'Turkish','https://www.wordreference.com/tren/###','https://tr.wiktionary.org/###','*https://www.deepl.com/translator#tr/en/###','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑğĞıİöÖüÜşŞçÇ',0,0,0,1,'turkish');
 INSERT INTO languages VALUES(14,'Khmer','*https://glosbe.com/km/en/###','*https://www.kheng.info/search/?query=###','*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate','´=''|`=''|’=''|‘=''|...=…|..=‥','។?៕','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','ក-៹',0,0,0,1,'khmer');
+INSERT INTO _migrations VALUES('20240118_154258_change_status_abbrev.sql');
+INSERT INTO _migrations VALUES('20240113_215142_add_term_follow_parent_bool.sql');
+INSERT INTO _migrations VALUES('20240125_drop_BkWordCount.sql');
+INSERT INTO _migrations VALUES('20240125_drop_bookstats_wordcount.sql');
+INSERT INTO _migrations VALUES('20240207_01_create_languagedicts.sql');
+INSERT INTO _migrations VALUES('20240207_02_drop_old_language_fields.sql');
 CREATE TABLE IF NOT EXISTS "statuses" (
 	"StID" INTEGER NOT NULL  ,
 	"StText" VARCHAR(20) NOT NULL  ,
@@ -82,8 +88,8 @@ INSERT INTO statuses VALUES(2,'New (2)','2');
 INSERT INTO statuses VALUES(3,'Learning (3)','3');
 INSERT INTO statuses VALUES(4,'Learning (4)','4');
 INSERT INTO statuses VALUES(5,'Learned','5');
-INSERT INTO statuses VALUES(98,'Ignored','Ign');
-INSERT INTO statuses VALUES(99,'Well Known','WKn');
+INSERT INTO statuses VALUES(98,'Ignored','I');
+INSERT INTO statuses VALUES(99,'Well Known','W');
 CREATE TABLE IF NOT EXISTS "tags" (
 	"TgID" INTEGER NOT NULL  ,
 	"TgText" VARCHAR(20) NOT NULL  ,
@@ -118,29 +124,6 @@ CREATE TABLE IF NOT EXISTS "sentences" (
 	PRIMARY KEY ("SeID"),
 	FOREIGN KEY("SeTxID") REFERENCES "texts" ("TxID") ON UPDATE NO ACTION ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS "bookstats" (
-	"BkID" INTEGER NOT NULL  ,
-	"wordcount" INTEGER NULL  ,
-	"distinctterms" INTEGER NULL  ,
-	"distinctunknowns" INTEGER NULL  ,
-	"unknownpercent" INTEGER NULL  , status_distribution VARCHAR(100) NULL,
-	PRIMARY KEY ("BkID"),
-	FOREIGN KEY("BkID") REFERENCES "books" ("BkID") ON UPDATE NO ACTION ON DELETE CASCADE
-);
-INSERT INTO bookstats VALUES(1,67,57,57,100,'{"0": 57, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(2,45,33,33,100,'{"0": 33, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(3,382,170,170,100,'{"0": 170, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(4,83,63,63,100,'{"0": 63, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(5,48,40,40,100,'{"0": 40, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(6,1241,370,370,100,'{"0": 370, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(7,646,246,246,100,'{"0": 246, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(8,157,99,99,100,'{"0": 99, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(9,115,100,100,100,'{"0": 100, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(10,110,85,85,100,'{"0": 85, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(11,174,120,120,100,'{"0": 120, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(12,69,49,49,100,'{"0": 49, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(13,64,41,41,100,'{"0": 41, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
-INSERT INTO bookstats VALUES(14,35,30,30,100,'{"0": 30, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
 CREATE TABLE IF NOT EXISTS "wordimages" (
 	"WiID" INTEGER NOT NULL  ,
 	"WiWoID" INTEGER NOT NULL  ,
@@ -165,7 +148,7 @@ CREATE TABLE IF NOT EXISTS "words" (
 	"WoRomanization" VARCHAR(100) NULL  ,
 	"WoTokenCount" TINYINT NOT NULL DEFAULT '0' ,
 	"WoCreated" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-	"WoStatusChanged" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"WoStatusChanged" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, WoSyncStatus INTEGER NOT NULL DEFAULT 0,
 	FOREIGN KEY("WoLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "books" (
@@ -241,7 +224,127 @@ CREATE TABLE IF NOT EXISTS "settings" (
 	PRIMARY KEY ("StKey")
 );
 INSERT INTO settings VALUES('IsDemoData','system','1');
-CREATE UNIQUE INDEX "LgName" ON "languages" ("LgName");
+CREATE TABLE IF NOT EXISTS "books" (
+	"BkID" INTEGER NOT NULL  ,
+	"BkLgID" INTEGER NOT NULL  ,
+	"BkTitle" VARCHAR(200) NOT NULL  ,
+	"BkSourceURI" VARCHAR(1000) NULL  ,
+	"BkArchived" TINYINT NOT NULL DEFAULT '0' ,
+	"BkCurrentTxID" INTEGER NOT NULL DEFAULT '0',
+        BkAudioFilename TEXT NULL,
+        BkAudioCurrentPos REAL NULL,
+        BkAudioBookmarks TEXT NULL,
+	PRIMARY KEY ("BkID"),
+	FOREIGN KEY("BkLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+INSERT INTO books VALUES(1,3,'Hrad Cimburk – Jak vzal vítr pasáčkovi čepici',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(2,11,'बुद्धिमान् शिष्यः',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(3,2,'逍遙遊',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(4,12,'Aladino y la lámpara maravillosa',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(5,10,'медведь',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(6,4,'Tutorial',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(7,4,'Tutorial follow-up',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(8,7,'Γεια σου, Νίκη. Ο Πέτρος είμαι.',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(9,1,'Examples',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(10,13,'Büyük ağaç',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(11,6,'Die Bremer Stadtmusikanten',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(12,5,'Boucles d’or et les trois ours',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(13,9,'北風と太陽 - きたかぜたいよう',NULL,0,0,NULL,NULL,NULL);
+INSERT INTO books VALUES(14,8,'Universal Declaration of Human Rights',NULL,0,0,NULL,NULL,NULL);
+CREATE TABLE IF NOT EXISTS "bookstats" (
+	"BkID" INTEGER NOT NULL  ,
+	"distinctterms" INTEGER NULL  ,
+	"distinctunknowns" INTEGER NULL  ,
+	"unknownpercent" INTEGER NULL  ,
+        status_distribution VARCHAR(100) NULL,
+	PRIMARY KEY ("BkID"),
+	FOREIGN KEY("BkID") REFERENCES "books" ("BkID") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+INSERT INTO bookstats VALUES(1,57,57,100,'{"0": 57, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(2,33,33,100,'{"0": 33, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(3,170,170,100,'{"0": 170, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(4,63,63,100,'{"0": 63, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(5,40,40,100,'{"0": 40, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(6,355,355,100,'{"0": 355, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(7,247,247,100,'{"0": 247, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(8,99,99,100,'{"0": 99, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(9,100,100,100,'{"0": 100, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(10,85,85,100,'{"0": 85, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(11,120,120,100,'{"0": 120, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(12,49,49,100,'{"0": 49, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(13,41,41,100,'{"0": 41, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+INSERT INTO bookstats VALUES(14,30,30,100,'{"0": 30, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "98": 0, "99": 0}');
+CREATE TABLE languagedicts (
+  "LdID" INTEGER NOT NULL,
+  "LdLgID" INTEGER NOT NULL,
+  "LdUseFor" VARCHAR(20) NOT NULL,
+  "LdType" VARCHAR(20) NOT NULL,
+  "LdDictURI" VARCHAR(200) NOT NULL,
+  "LdIsActive" TINYINT NOT NULL DEFAULT 1,
+  "LdSortOrder" INTEGER NOT NULL,
+  PRIMARY KEY ("LdID"),
+  FOREIGN KEY("LdLgID") REFERENCES "languages" ("LgID") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+INSERT INTO languagedicts VALUES(1,1,'terms','embeddedhtml','https://www.arabicstudentsdictionary.com/search?q=###',1,1);
+INSERT INTO languagedicts VALUES(2,1,'terms','popuphtml','https://translate.google.com/?hl=es&sl=ar&tl=en&text=###&op=translate',1,2);
+INSERT INTO languagedicts VALUES(3,1,'sentences','popuphtml','https://translate.google.com/?hl=es&sl=ar&tl=en&text=###',1,3);
+INSERT INTO languagedicts VALUES(4,2,'terms','embeddedhtml','https://ctext.org/dictionary.pl?if=en&char=###',1,1);
+INSERT INTO languagedicts VALUES(5,2,'sentences','popuphtml','https://www.deepl.com/translator#ch/en/###',1,2);
+INSERT INTO languagedicts VALUES(6,3,'terms','embeddedhtml','https://slovniky.lingea.cz/Anglicko-cesky/###',1,1);
+INSERT INTO languagedicts VALUES(7,3,'terms','embeddedhtml','https://slovnik.seznam.cz/preklad/cesky_anglicky/###',1,2);
+INSERT INTO languagedicts VALUES(8,3,'sentences','popuphtml','https://www.deepl.com/translator#cs/en/###',1,3);
+INSERT INTO languagedicts VALUES(9,4,'terms','embeddedhtml','https://en.thefreedictionary.com/###',1,1);
+INSERT INTO languagedicts VALUES(10,4,'terms','popuphtml','https://www.collinsdictionary.com/dictionary/english/###',1,2);
+INSERT INTO languagedicts VALUES(11,4,'sentences','popuphtml','https://www.deepl.com/translator#en/en/###',1,3);
+INSERT INTO languagedicts VALUES(12,5,'terms','embeddedhtml','https://fr.thefreedictionary.com/###',1,1);
+INSERT INTO languagedicts VALUES(13,5,'sentences','popuphtml','https://www.deepl.com/translator#fr/en/###',1,2);
+INSERT INTO languagedicts VALUES(14,6,'terms','embeddedhtml','https://de.thefreedictionary.com/###',1,1);
+INSERT INTO languagedicts VALUES(15,6,'terms','embeddedhtml','https://www.wordreference.com/deen/###',1,2);
+INSERT INTO languagedicts VALUES(16,6,'sentences','popuphtml','https://www.deepl.com/translator#de/en/###',1,3);
+INSERT INTO languagedicts VALUES(17,7,'terms','embeddedhtml','https://www.wordreference.com/gren/###',1,1);
+INSERT INTO languagedicts VALUES(18,7,'terms','embeddedhtml','https://en.wiktionary.org/wiki/###',1,2);
+INSERT INTO languagedicts VALUES(19,7,'sentences','popuphtml','https://www.deepl.com/translator#el/en/###',1,3);
+INSERT INTO languagedicts VALUES(20,8,'terms','embeddedhtml','https://www.boltidictionary.com/en/search?s=###',1,1);
+INSERT INTO languagedicts VALUES(21,8,'sentences','embeddedhtml','https://www.bing.com/translator/?from=hi&to=en&text=###',1,2);
+INSERT INTO languagedicts VALUES(22,9,'terms','embeddedhtml','https://jisho.org/search/###',1,1);
+INSERT INTO languagedicts VALUES(23,9,'sentences','popuphtml','https://www.deepl.com/translator#jp/en/###',1,2);
+INSERT INTO languagedicts VALUES(24,10,'terms','embeddedhtml','https://www.dict.com/Russian-English/###',1,1);
+INSERT INTO languagedicts VALUES(25,10,'terms','embeddedhtml','https://en.openrussian.org/?search=###',1,2);
+INSERT INTO languagedicts VALUES(26,10,'sentences','popuphtml','https://www.deepl.com/translator#ru/en/###',1,3);
+INSERT INTO languagedicts VALUES(27,11,'terms','embeddedhtml','https://dsal.uchicago.edu/cgi-bin/app/sanskrit_query.py?qs=###&searchhws=yes&matchtype=default',1,1);
+INSERT INTO languagedicts VALUES(28,11,'terms','embeddedhtml','https://www.learnsanskrit.cc/translate?search=###&dir=se',1,2);
+INSERT INTO languagedicts VALUES(29,11,'sentences','popuphtml','https://translate.google.com/?hl=en&sl=sa&tl=en&text=###&op=translate',1,3);
+INSERT INTO languagedicts VALUES(30,12,'terms','embeddedhtml','https://es.thefreedictionary.com/###',1,1);
+INSERT INTO languagedicts VALUES(31,12,'terms','popuphtml','https://www.wordreference.com/es/en/translation.asp?spen=###',1,2);
+INSERT INTO languagedicts VALUES(32,12,'sentences','popuphtml','https://www.deepl.com/translator#es/en/###',1,3);
+INSERT INTO languagedicts VALUES(33,13,'terms','embeddedhtml','https://www.wordreference.com/tren/###',1,1);
+INSERT INTO languagedicts VALUES(34,13,'terms','embeddedhtml','https://tr.wiktionary.org/###',1,2);
+INSERT INTO languagedicts VALUES(35,13,'sentences','popuphtml','https://www.deepl.com/translator#tr/en/###',1,3);
+CREATE TABLE IF NOT EXISTS "languages" (
+	"LgID" INTEGER NOT NULL  ,
+	"LgName" VARCHAR(40) NOT NULL  ,
+	"LgCharacterSubstitutions" VARCHAR(500) NOT NULL  ,
+	"LgRegexpSplitSentences" VARCHAR(500) NOT NULL  ,
+	"LgExceptionsSplitSentences" VARCHAR(500) NOT NULL  ,
+	"LgRegexpWordCharacters" VARCHAR(500) NOT NULL  ,
+	"LgRightToLeft" TINYINT NOT NULL  ,
+	"LgShowRomanization" TINYINT NOT NULL DEFAULT '0' ,
+	"LgParserType" VARCHAR(20) NOT NULL DEFAULT 'spacedel' ,
+	PRIMARY KEY ("LgID")
+);
+INSERT INTO languages VALUES(1,'Arabic','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?؟۔‎','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','\u0600-\u06FF\uFE70-\uFEFC',1,1,'spacedel');
+INSERT INTO languages VALUES(2,'Classical Chinese','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?。！？','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','一-龥',0,1,'classicalchinese');
+INSERT INTO languages VALUES(3,'Czech','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,1,'spacedel');
+INSERT INTO languages VALUES(4,'English','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,'spacedel');
+INSERT INTO languages VALUES(5,'French','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,'spacedel');
+INSERT INTO languages VALUES(6,'German','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,'spacedel');
+INSERT INTO languages VALUES(7,'Greek','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?;','Mr.|Mrs.|Dr.|[A-Z].|κτλ.|κλπ.|π.χ.|λ.χ.|κ.ά|δηλ.|Κος.|Κ.|Κα.|μ.Χ.|ΥΓ.|μ.μ.|π.μ.|σελ.|κεφ.|βλ.|αι.','α-ωΑ-ΩάόήέώύίΊΏΈΉΌΆΎϊΪϋΫΐΰ',0,1,'spacedel');
+INSERT INTO languages VALUES(8,'Hindi','´=''|`=''|’=''|‘=''|...=…|..=‥','.?!|।॥','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-Z\u0900-\u0963\u0966-\u097F',0,1,'spacedel');
+INSERT INTO languages VALUES(9,'Japanese','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?。？！','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','\p{Han}\p{Katakana}\p{Hiragana}',0,1,'japanese');
+INSERT INTO languages VALUES(10,'Russian','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','А-Яа-яЁё',0,0,'spacedel');
+INSERT INTO languages VALUES(11,'Sanskrit','´=''|`=''|’=''|‘=''|...=…|..=‥','.?!।॥','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-Z\u0900-\u0963\u0966-\u097F',0,1,'spacedel');
+INSERT INTO languages VALUES(12,'Spanish','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑ',0,0,'spacedel');
+INSERT INTO languages VALUES(13,'Turkish','´=''|`=''|’=''|‘=''|...=…|..=‥','.!?','Mr.|Mrs.|Dr.|[A-Z].|Vd.|Vds.','a-zA-ZÀ-ÖØ-öø-ȳáéíóúÁÉÍÓÚñÑğĞıİöÖüÜşŞçÇ',0,1,'turkish');
 CREATE UNIQUE INDEX "TgText" ON "tags" ("TgText");
 CREATE UNIQUE INDEX "T2Text" ON "tags2" ("T2Text");
 CREATE INDEX "BtT2ID" ON "booktags" ("BtT2ID");
@@ -255,9 +358,75 @@ CREATE INDEX "WoStatusChanged" ON "words" ("WoStatusChanged");
 CREATE INDEX "WoTextLC" ON "words" ("WoTextLC");
 CREATE UNIQUE INDEX "WoTextLCLgID" ON "words" ("WoTextLC", "WoLgID");
 CREATE INDEX "WoTokenCount" ON "words" ("WoTokenCount");
-CREATE INDEX "BkLgID" ON "books" ("BkLgID");
 CREATE UNIQUE INDEX "wordparent_pair" ON "wordparents" ("WpWoID", "WpParentWoID");
+CREATE INDEX "BkLgID" ON "books" ("BkLgID");
+CREATE UNIQUE INDEX "LgName" ON "languages" ("LgName");
+CREATE TRIGGER trig_wordparents_after_insert_update_parent_WoStatus_if_following
+-- created by db/schema/migrations_repeatable/trig_wordparents.sql
+AFTER INSERT ON wordparents
+BEGIN
+    UPDATE words
+    SET WoStatus = (
+      select WoStatus from words where WoID = new.WpWoID
+    )
+    WHERE WoID = new.WpParentWoID
+    AND 1 = (
+      SELECT COUNT(*)
+      FROM wordparents
+      INNER JOIN words ON WoID = WpWoID
+      WHERE WoSyncStatus = 1
+      AND WoID = new.WpWoID
+    );
+END
+;
+CREATE TRIGGER trig_wordparents_after_delete_change_WoSyncStatus
+-- created by db/schema/migrations_repeatable/trig_wordparents.sql
+BEFORE DELETE ON wordparents
+FOR EACH ROW
+BEGIN
+    UPDATE words
+    SET WoSyncStatus = 0
+    WHERE WoID IN
+    (
+      select WpWoID from wordparents
+      where WpParentWoID = old.WpParentWoID
+    );
+END
+;
+CREATE TRIGGER trig_words_after_update_WoStatus_if_following_parent
+-- created by db/schema/migrations_repeatable/trig_words.sql
+AFTER UPDATE OF WoStatus, WoSyncStatus ON words
+FOR EACH ROW
+WHEN (old.WoStatus <> new.WoStatus or (old.WoSyncStatus = 0 and new.WoSyncStatus = 1))
+BEGIN
+    UPDATE words
+    SET WoStatus = new.WoStatus
+    WHERE WoID in (
+      -- single parent children that are following this term.
+      select WpWoID
+      from wordparents
+      inner join words on WoID = WpWoID
+      where WoSyncStatus = 1
+      and WpParentWoID = old.WoID
+      group by WpWoID
+      having count(*) = 1
+
+      UNION
+
+      -- The parent of this term,
+      -- if this term has a single parent and has "follow parent"
+      select WpParentWoID
+      from wordparents
+      inner join words on WoID = WpWoID
+      where WoSyncStatus = 1
+      and WoID = old.WoID
+      group by WpWoID
+      having count(*) = 1
+    );
+END
+;
 CREATE TRIGGER trig_words_update_WoStatusChanged
+-- created by db/schema/migrations_repeatable/trig_words.sql
 AFTER UPDATE OF WoStatus ON words
 FOR EACH ROW
 WHEN old.WoStatus <> new.WoStatus
@@ -265,5 +434,6 @@ BEGIN
     UPDATE words
     SET WoStatusChanged = CURRENT_TIMESTAMP
     WHERE WoID = NEW.WoID;
-END;
+END
+;
 COMMIT;

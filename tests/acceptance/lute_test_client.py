@@ -20,7 +20,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-class LuteTestClient:
+class LuteTestClient:  # pylint: disable=too-many-public-methods
     """
     The client!
     """
@@ -150,22 +150,38 @@ class LuteTestClient:
                 # This line didn't work:
                 # iframe.choose('status', updates['status'])
                 s = updates["status"]
-                xp = f"//input[@type='radio'][@name='status'][@value='{s}']"
-                radios = b.find_by_xpath(xp)
-                assert len(radios) == 1, "have matching radio button"
-                radio = radios[0]
-                radio.click()
+                xp = "".join(
+                    [
+                        "//input[@type='radio'][@name='status']",
+                        f"[@value='{s}']",
+                        "/following-sibling::label",
+                    ]
+                )
+                labels = b.find_by_xpath(xp)
+                assert len(labels) == 1, "have matching radio button"
+                label = labels[0]
+                label.click()
             elif k in ("translation", "text"):
                 b.find_by_css(f"#{k}").fill(v)
             elif k == "parents":
                 for p in updates["parents"]:
-                    xp = "ul#parentslist li.tagit-new > input.ui-autocomplete-input"
-                    tagitbox = b.find_by_css(xp)
-                    assert len(tagitbox) == 1, "have parent input"
-                    box = tagitbox.first
-                    box.type(p, slowly=False)
-                    box.type(Keys.RETURN)
-                    time.sleep(0.1)  # seconds
+                    xpath = [
+                        # input w/ id
+                        '//input[@id="parentslist"]',
+                        # <tags> before it.
+                        "/preceding-sibling::tags",
+                        # <span> within the <tags> with class.
+                        '/span[@class="tagify__input"]',
+                    ]
+                    span = b.find_by_xpath("".join(xpath))
+                    span.type(p, slowly=False)
+                    span.type(Keys.RETURN)
+                    time.sleep(0.3)  # seconds
+            elif k == "sync_status":
+                if v:
+                    b.check("sync_status")
+                else:
+                    b.uncheck("sync_status")
             else:
                 raise RuntimeError(f"unhandled key {k}")
 
@@ -174,6 +190,7 @@ class LuteTestClient:
         self.visit("/")
         self.browser.find_by_css("#menu_terms").mouse_over()
         self.browser.find_by_id("term_index").first.click()
+        self.browser.find_by_css("#term_actions").mouse_over()
         self.click_link("Create new")
         assert "New Term" in self.browser.html
 
@@ -218,7 +235,10 @@ class LuteTestClient:
             return f"{t.text} ({status})"
 
         etext = [_to_string(e) for e in elements]
-        return "/".join(etext)
+        ret = "/".join(etext)
+        if ret.endswith("/"):
+            ret = ret[:-1]
+        return ret
 
     ################################3
     # Reading, term actions
@@ -281,6 +301,7 @@ class LuteTestClient:
         # Have to refresh the content to query the dom ...
         # Unfortunately, I can't see how to refresh without reloading
         self.browser.reload()
+        time.sleep(0.2)  # Hack, test failing.
 
     def click_word_fill_form(self, word, updates=None):
         """
@@ -291,8 +312,11 @@ class LuteTestClient:
 
         should_refresh = False
         with self.browser.get_iframe("wordframe") as iframe:
+            time.sleep(0.2)  # Hack, test failing.
             self._fill_term_form(iframe, updates)
+            time.sleep(0.2)  # Hack, test failing.
             iframe.find_by_css("#submit").first.click()
+            time.sleep(0.2)  # Hack, test failing.
 
             # Only refresh the reading frame if everything was ok.
             # Some submits will fail due to validation errors,
@@ -304,6 +328,7 @@ class LuteTestClient:
         # Unfortunately, I can't see how to refresh without reloading
         if should_refresh:
             self.browser.reload()
+            time.sleep(0.2)  # Hack, test failing.
 
     ################################3
     # Misc.
@@ -329,3 +354,10 @@ class LuteTestClient:
     def sleep(self, seconds):
         "Nap."
         time.sleep(seconds)
+
+    def get_temp_file_content(self, filename):
+        "Get book table content."
+        response = requests.get(
+            f"{self.home}/dev_api/temp_file_content/{filename}", timeout=1
+        )
+        return response.text

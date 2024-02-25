@@ -1,4 +1,129 @@
 
+# 3.2.2 (2024-02-21)
+
+Feature changes:
+
+* Move 'Export CSV' into term Actions menu.
+* Issue #271: Fix multiword select in some text locations
+* Issue #240: Use datatables for language listing.
+* Issue #221: Don't scroll reading pane on term delete.
+* Issue #269: Fix embedded translation dict.
+
+
+# 3.2.1 (2024-02-19)
+
+Feature changes:
+
+* #238: add "Focus mode".  From @webofpies in #262, #268.
+* #266: Add backup file download link.
+* #237: Show last backup date, add listing.  By @sakolkar in #227.
+* Improve dictionary UI, use tabs.  With @webofpies in #264.
+* #5: Support variable number of dictionaries.
+* #261: fix rtl language controls for book add, edit, page edit.
+* #223: resize text areas horiz and vert.
+
+Back end changes:
+
+* schema, js changes for dictionary tabs.
+
+
+# 3.1.4 (2024-02-11)
+
+Feature changes:
+
+* Issue 25: click term image and Delete/Backspace to delete.
+* Issue 214: user must press Return to create parent tag.
+* Issue 215: arrow changes status for hovered.
+* Issue 213: no hovered elements if clicked.
+* Issue 216: parent paste should show dropdown for hints.
+* Show parent suggestions after single char input.
+
+
+# 3.1.3 (2024-02-07)
+
+Feature changes:
+
+* [#182](https://github.com/jzohrab/lute-v3/issues/182): Confirm book archive.
+* [#174](https://github.com/jzohrab/lute-v3/issues/174): Add bulk term deletion.
+* [#205](https://github.com/jzohrab/lute-v3/issues/205): Add Actions menu to term listing to simplify adding actions.
+* [#175](https://github.com/jzohrab/lute-v3/issues/175): Keep blank lines of imported texts when rendering page for reading.
+* [#202](https://github.com/jzohrab/lute-v3/issues/202): Include all books in cli export.
+* [#191](https://github.com/jzohrab/lute-v3/issues/191): Scroll back to top on "mark as read".
+* [#177](https://github.com/jzohrab/lute-v3/issues/177): Show word count on book listing stats bar hover.
+* [#164[(https://github.com/jzohrab/lute-v3/issues/164): Hit backspace to edit pasted parent tag.
+* Add "(all)" to term status filter.
+* [#166](https://github.com/jzohrab/lute-v3/issues/166): Keep returns in term translation in Terms listing.
+
+Bug fixes:
+
+* [#170](https://github.com/jzohrab/lute-v3/issues/170): Fix arrow keys for RTL languages.
+* [#207](https://github.com/jzohrab/lute-v3/issues/207): Move title to right for RTL languages.
+
+Back end changes:
+
+* Simplify lute.js, remove state tracking
+
+
+# 3.1.2 (2024-02-01)
+
+* Bugfix: only recalc texts.TxWordCount for valid parsers.
+
+
+# 3.1.1 (2024-01-30)
+
+Feature changes:
+
+* Add book stats graph and refresh.  By @webofpies in [154](https://github.com/jzohrab/lute-v3/pull/154) and [162](https://github.com/jzohrab/lute-v3/pull/162).
+* [138](https://github.com/jzohrab/lute-v3/issues/138): Separate Word Count and % Known into separate columns and support sorting.
+* Allow term listing search in translations.
+* [155](https://github.com/jzohrab/lute-v3/issues/155): Add "words per page" field during book creation.  By @fanyingfx.
+
+Bug fixes:
+
+* [112](https://github.com/jzohrab/lute-v3/issues/112): show different options if backup failed (retry, skip, adjust settings)
+* Sort statuses properly in the term listing.
+* [95](https://github.com/jzohrab/lute-v3/issues/95): editing pages updates book word count
+* Shorten migration file names to prevent Windows file path length exceptions
+
+Misc back-end:
+
+* Add term Export CSV test.
+* Calc book stats on at least 5 pages.
+* Clean up some form styles.
+* Speed up book stats calculation.
+
+
+# 3.1.0 (2024-01-22)
+
+Feature changes:
+
+* [#66](https://github.com/jzohrab/lute-v3/issues/66): add "Link to parent" checkbox for child terms to follow/change parent status
+* Restyle radio buttons for nicer layout.  By @webofpies.
+
+Back end changes:
+
+* db schema and test changes for feature
+
+
+# 3.0.12 (2024-01-18)
+
+Feature changes:
+
+* Improve term export: export all terms, change headings to be immediately importable.
+* Add hotkeys to reading menu (pulled from manual).
+
+Bugfixes:
+
+* Fix sentences link.
+* Fix spelling of "dismiss" in anchor tag for remove_demo_flag
+* Fix scrolling bug on update.  By @webofpies.
+* Fix z-index of player and popup.  By @webofpies in #127.
+
+Back end changes:
+
+* Change tagging library to tagify
+
+
 # 3.0.11 (2024-01-11)
 
 * rework/optimize form and table styles

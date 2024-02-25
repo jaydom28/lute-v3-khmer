@@ -38,6 +38,11 @@
     </tr>
 
     <tr>
+        <td> {{ form.max_page_tokens.label }}</td>
+        <td> {{ form.max_page_tokens(class="form-control") }}</td>
+    </tr>
+
+    <tr>
       <td>{{ form.source_uri.label }}</td>
       <td>{{ form.source_uri(class="form-control") }}</td>
     </tr>
@@ -47,16 +52,9 @@
       <td>{{ form.audiofile() }}</td>
     </tr>
 
-    {# Tags li entries are managed by tagit. #}
     <tr>
-      <td>Tags</td>
-      <td>
-        <ul id="booktagslist" class="tags nomarginblock shorttaglist">
-          {% for t in form.book_tags %}
-          <li>{{ t.object_data }}</li>
-          {% endfor %}
-        </ul>
-      </td>
+      <td>{{ form.book_tags.label }}</td>
+      <td>{{ form.book_tags(class="form-control") }}</td>
     </tr>
 
   </tbody>
@@ -69,34 +67,35 @@
 
 <script type="text/javascript">
   var TAGS = {{ tags | safe }};
+  const LANG_RTL_MAP = {{ rtl_map | safe }}
 
-  let setup_book_tags_Tagit = function() {
-    // Note that Flask_WTF uses <fieldname>-{index}
-    // for mapping to and from FieldLists!
-    var prototypeFieldName = 'book_tags-__name__';
-    var fieldIndex = 0;
+  let setup_book_tags_tagify = function(input) {
+    const tagify = new Tagify(input, {
+      placeholder: 'Tags',
+      editTags: false,
+      autoComplete: { rightKey: true, tabKey: true },
+      dropdown: { enabled: 1 },
+      enforceWhitelist: false,
+      whitelist: TAGS
+    });  // end tagify
+    return tagify;
+  };
 
-    let invalidChar = function(s) { return /[\uD800-\uDFFF]/.test(s); };
-
-    $('#booktagslist').tagit(
-      {
-        beforeTagAdded: function (_event, ui) {
-          if (invalidChar(ui.tag.text())) {
-            return;
-          }
-          fieldIndex++;
-          $(this).tagit({fieldName: prototypeFieldName.replace('__name__', fieldIndex)});
-        },
-        availableTags: TAGS,
-        fieldName: prototypeFieldName.replace('__name__', 0)
-      });
-
+  /* On language change, may need to change field directions. */
+  let set_field_directions = function() {
+    const new_id = parseInt($("#language_id").val());
+    let is_rtl = LANG_RTL_MAP[new_id] ?? false;
+    const direction = is_rtl ? "rtl" : "ltr";
+    $('#title, #text').css('direction', direction);
   };
 
   $(document).ready(function () {
-    setup_book_tags_Tagit();
-  });
+    var tagslist = document.getElementById('book_tags');
+    var tags_tagify = setup_book_tags_tagify(tagslist);
 
+    set_field_directions();
+    $("#language_id").change(set_field_directions);
+  });
 </script>
 
 {% endblock %}

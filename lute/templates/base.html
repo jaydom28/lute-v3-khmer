@@ -19,7 +19,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
     
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.css') }}" />
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.tagit.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tagify.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tagify_overrides.css') }}" />
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/datatables.min.css') }}" />
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/player-styles.css') }}" />
@@ -31,8 +32,10 @@
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.scrollTo.min.js') }}" charset="utf-8"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"  charset="utf-8"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.jeditable.mini.js') }}" charset="utf-8"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/tag-it.js') }}" charset="utf-8"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/tagify.min.js') }}" charset="utf-8"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/tagify.polyfills.min.js') }}" charset="utf-8"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}" charset="utf-8"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.button.download.js') }}" charset="utf-8"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.hoverIntent.js') }}" charset="utf-8"></script>
 
   <!-- this calls a route defined in app_factory to never cache this file -->
@@ -99,8 +102,13 @@
         <span>Backup</span>
         <ul class="sub-menu last-sub-menu">
           {% if backup_last_display_date is not none %}
-          <li>last backup: {{ backup_last_display_date }}</li>
+          {% if backup_time_since is not none %}
+          <li>Last backup was {{ backup_time_since }}.</li>
           {% endif %}
+          <li>{{ backup_last_display_date | format }}</li>
+          <hr>
+          {% endif %}
+          <li><a id="backup_index" href="/backup/index">Backups</a></li>
           <li><a href="/backup/backup?type=manual">Create backup</a></li>
         </ul>
       </div>

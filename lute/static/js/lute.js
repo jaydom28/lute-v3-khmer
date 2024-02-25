@@ -5,15 +5,9 @@
  */
 let LUTE_CURR_TERM_DATA_ORDER = -1;  // initially not set.
 
-/**
- * Lute has 2 different "modes" when reading:
- * - LUTE_HOVERING = true: Hover mode, not selecting
- * - LUTE_HOVERING = false: Word clicked, or click-drag
- */ 
-let LUTE_HOVERING = true;
 
 /**
- * When the reading pane is first loaded, it is set in "hover mode",
+ * When the reading pane is first loaded, it's in "hover mode",
  * meaning that when the user hovers over a word, that word becomes
  * the "active word" -- i.e., status update keyboard shortcuts should
  * operate on that hovered word, and as the user moves the mouse
@@ -22,30 +16,27 @@ let LUTE_HOVERING = true;
  * editing the word in the Term edit pane, and has to consciously
  * disable the "clicked word" mode by hitting ESC or RETURN.
  *
- * When the user is done editing a the Term form in the Term edit pane
- * and hits "save", the main reading page's text div is updated (see
- * templates/read/updated.twig.html).  This text div reload then has
- * to notify _this_ javascript to start_hover_mode() again.
- * 
- * I dislike this code (specifically, that the updated.twig.html calls
- * this javascript function), but can't think of a better way to
- * manage this.
+ * The full page text is often reloaded via ajax, e.g. when the user
+ * saves an edited term, or the status is updated with a hotkey.
+ * The template lute/templates/read/page_content.html calls
+ * this method on reload to reset the cursor etc.
  */
 function start_hover_mode(should_clear_frames = true) {
-  // console.log('CALLING RESET');
-  load_reading_pane_globals();
-  LUTE_HOVERING = true;
-
   $('span.kwordmarked').removeClass('kwordmarked');
 
-  const w = get_current_word();
-  if (w != null) {
+  const curr_word = $('span.word').filter(function() {
+    return _get_order($(this)) == LUTE_CURR_TERM_DATA_ORDER;
+  });
+  if (curr_word.length == 1) {
+    const w = $(curr_word[0]);
     $(w).addClass('wordhover');
     apply_status_class($(w));
   }
 
-  if (should_clear_frames)
-    clear_frames();
+  if (should_clear_frames) {
+    $('#wordframeid').attr('src', '/read/empty');
+    $('.dictcontainer').hide();
+  }
 
   clear_newmultiterm_elements();
 
@@ -54,26 +45,13 @@ function start_hover_mode(should_clear_frames = true) {
 }
 
 
-/**
- * On new page load, the cursor should be reset to the start of the page.
- */
-function reset_cursor() {
-  LUTE_CURR_TERM_DATA_ORDER = -1;
-  $('span.wordhover').removeClass('wordhover');
-  $('span.kwordmarked').removeClass('kwordmarked');
-}
-
-
-let clear_frames = function() {
-  $('#wordframeid').attr('src', '/read/empty');
-  $('#dictframeid').attr('src', '/read/empty');
-}
-
-
 /** 
  * Prepare the interaction events with the text.
+ *
+ * pos = position hash, e.g.
+ * {my: 'center bottom', at: 'center top-10', collision: 'flipfit flip'}
  */
-function prepareTextInteractions(textid) {
+function prepareTextInteractions(pos) {
   const t = $('#thetext');
   // Using "t.on" here because .word elements
   // are added and removed dynamically, and "t.on"
@@ -92,7 +70,7 @@ function prepareTextInteractions(textid) {
   $(document).on('keydown', handle_keydown);
 
   $('#thetext').tooltip({
-    position: { my: 'left top+10', at: 'left bottom', collision: 'flipfit flip' },
+    position: pos,
     items: '.word.showtooltip',
     show: { easing: 'easeOutCirc' },
     content: function (setContent) { tooltip_textitem_hover_content($(this), setContent); }
@@ -129,11 +107,22 @@ function showEditFrame(el, extra_args = {}) {
   // console.log('go to url = ' + url);
 
   top.frames.wordframe.location.href = url;
+  applyInitialPaneSizes();  // in resize.js
 }
 
 
+/* ========================================= */
+/** Cursor management. */
+
+/** Called on page load (read/index.html). */
+function reset_cursor() {
+  LUTE_CURR_TERM_DATA_ORDER = -1;
+}
+
+let _get_order = function(el) { return parseInt(el.data('order')); };
+
 let save_curr_data_order = function(el) {
-  LUTE_CURR_TERM_DATA_ORDER = parseInt(el.data('order'));
+  LUTE_CURR_TERM_DATA_ORDER = _get_order(el);
 }
 
 
@@ -190,17 +179,44 @@ function hover_over_add_status_class(e) {
 /** Hovering */
 
 function hover_over(e) {
-  if (! LUTE_HOVERING)
-    return;
   $('span.wordhover').removeClass('wordhover');
-  $(this).addClass('wordhover');
-  save_curr_data_order($(this));
+  const marked_count = $('span.kwordmarked').toArray().length;
+  if (marked_count == 0) {
+    $(this).addClass('wordhover');
+    save_curr_data_order($(this));
+  }
 }
 
 function hover_out(e) {
-  if (! LUTE_HOVERING)
-    return;
   $('span.wordhover').removeClass('wordhover');
+}
+
+
+/* ========================================= */
+/** Clicking */
+
+let word_clicked = function(el, e) {
+  el.removeClass('wordhover');
+  save_curr_data_order(el);
+
+  // If already clicked, remove the click marker.
+  if (el.hasClass('kwordmarked')) {
+    el.removeClass('kwordmarked');
+    if ($('span.kwordmarked').length == 0) {
+      el.addClass('wordhover');
+      start_hover_mode();
+    }
+    return;
+  }
+
+  // Not already clicked.
+  if (! e.shiftKey) {
+    // Only one element should be marked clicked.
+    $('span.kwordmarked').removeClass('kwordmarked');
+    showEditFrame(el);
+  }
+  el.addClass('kwordmarked');
+  el.removeClass('hasflash');
 }
 
 
@@ -215,29 +231,19 @@ let clear_newmultiterm_elements = function() {
 }
 
 function select_started(e) {
-  LUTE_HOVERING = false;
-  $('span.wordhover').removeClass('wordhover');
   clear_newmultiterm_elements();
-  clear_frames();
   $(this).addClass('newmultiterm');
   selection_start_el = $(this);
   save_curr_data_order($(this));
 }
 
-let get_selected_in_range = function(start_el, end_el, selector) {
-  const first = parseInt(start_el.data('order'))
-  const last = parseInt(end_el.data('order'));
-
-  let startord = first;
-  let endord = last;
-
-  if (startord > endord) {
-    endord = first;
-    startord = last;
-  }
-
-  const selected = $(selector).filter(function() {
-    const ord = $(this).data("order");
+let get_selected_in_range = function(start_el, end_el) {
+  let tmp_start = _get_order(start_el);
+  let tmp_end = _get_order(end_el);
+  // Javascript sorts numbers as strings.  wtf.
+  const [startord, endord] = [tmp_start, tmp_end].sort((a, b) => a - b);
+  const selected = $('span.textitem').filter(function() {
+    const ord = _get_order($(this));
     return ord >= startord && ord <= endord;
   });
   return selected;
@@ -247,7 +253,7 @@ function select_over(e) {
   if (selection_start_el == null)
     return;  // Not selecting
   $('.newmultiterm').removeClass('newmultiterm');
-  const selected = get_selected_in_range(selection_start_el, $(this), 'span.textitem');
+  const selected = get_selected_in_range(selection_start_el, $(this));
   selected.addClass('newmultiterm');
 }
 
@@ -261,7 +267,7 @@ function select_ended(e) {
 
   $('span.kwordmarked').removeClass('kwordmarked');
 
-  const selected = get_selected_in_range(selection_start_el, $(this), 'span.textitem');
+  const selected = get_selected_in_range(selection_start_el, $(this));
   if (e.shiftKey) {
     copy_text_to_clipboard(selected.toArray());
     start_hover_mode(false);
@@ -281,68 +287,20 @@ function select_ended(e) {
 }
 
 
-let word_clicked = function(el, e) {
-  el.removeClass('wordhover');
-  save_curr_data_order(el);
-  if (el.hasClass('kwordmarked')) {
-    el.removeClass('kwordmarked');
-    const nothing_marked = $('span.kwordmarked').length == 0;
-    if (nothing_marked) {
-      el.addClass('wordhover');
-      start_hover_mode();
-    }
-  }
-  else {
-    if (! e.shiftKey) {
-      $('span.kwordmarked').removeClass('kwordmarked');
-      showEditFrame(el);
-    }
-    el.addClass('kwordmarked');
-    el.removeClass('hasflash');
-  }
-}
-
-
 /********************************************/
 // Keyboard navigation.
-
-// Load all words into scope.
-var words = null;
-var maxindex = null;
-
-function load_reading_pane_globals() {
-  words = $('span.word').sort(function(a, b) {
-    return $(a).data('order') - $(b).data('order');
-  });
-  // console.log('have ' + words.size() + ' words');
-  maxindex = words.size() - 1;
-}
-
-$(document).ready(load_reading_pane_globals);
-
-let current_word_index = function() {
-  const i = words.toArray().findIndex(x => parseInt(x.dataset.order) === LUTE_CURR_TERM_DATA_ORDER);
-  // console.log(`found index = ${i}`);
-  return i;
-};
-
-let get_current_word = function() {
-  const selindex = current_word_index();
-  if (selindex == -1)
-    return null;
-  return words.eq(selindex);
-}
 
 /** Get the rest of the textitems in the current active/hovered word's
  * sentence or paragraph, or null if no selection. */
 let get_textitems_spans = function(e) {
-  const w = get_current_word();
-  if (w == null)
+  let elements = $('span.kwordmarked, span.newmultiterm, span.wordhover');
+  elements.sort((a, b) => _get_order($(a)) - _get_order($(b)));
+  if (elements.length == 0)
     return null;
 
-  const attr_name = !e.shiftKey ? 'sentence-id' : 'paragraph-id';
-  const attr_value = w.data(attr_name);
-
+  const w = elements[0];
+  const attr_name = e.shiftKey ? 'paragraph-id' : 'sentence-id';
+  const attr_value = $(w).data(attr_name);
   return $(`span.textitem[data-${attr_name}="${attr_value}"]`).toArray();
 };
 
@@ -350,12 +308,11 @@ let get_textitems_spans = function(e) {
  * color flash. */
 let handle_copy = function(e) {
   tis = get_textitems_spans(e);
-  if (tis == null)
-    return;
-  copy_text_to_clipboard(tis);
+  if (tis != null)
+    copy_text_to_clipboard(tis);
 }
 
-let copy_text_to_clipboard = function(textitemspans, show_flash = true) {
+let copy_text_to_clipboard = function(textitemspans) {
   const copytext = textitemspans.map(s => $(s).text()).join('');
 
   // console.log('copying ' + copytext);
@@ -383,71 +340,105 @@ let copy_text_to_clipboard = function(textitemspans, show_flash = true) {
 }
 
 
-let set_cursor = function(newindex) {
-  LUTE_HOVERING = false;
-  $('span.wordhover').removeClass('wordhover');
-  clear_newmultiterm_elements();
+let move_cursor = function(shiftby) {
+  // Cursor is set to the first clicked or hovered element.
+  let elements = $('span.kwordmarked, span.newmultiterm, span.wordhover');
+  elements.sort((a, b) => _get_order($(a)) - _get_order($(b)));
+  const curr = (elements.length == 0) ? null : elements[0];
 
-  if (newindex < 0 || newindex >= words.size())
-    return;
-  let curr = words.eq(newindex);
-  save_curr_data_order(curr);
-  remove_status_highlights();
+  let words = $('span.word');
+  words.sort((a, b) => _get_order($(a)) - _get_order($(b)));
+
+  let _get_new_index = function(curr) {
+    if (curr == null)
+      return 0;
+    const pid = $(curr).attr('id');
+    let i = words.toArray().findIndex(e => $(e).attr('id') == pid) + shiftby;
+    i = Math.max(i, 0); // ensure >= 0
+    i = Math.min(i, words.length - 1);  // within array.
+    return i;
+  }
+  const target = $(words[_get_new_index(curr)]);
+
+  // Adjust all screen state.
+  $('span.newmultiterm').removeClass('newmultiterm');
   $('span.kwordmarked').removeClass('kwordmarked');
-  curr.addClass('kwordmarked');
-  apply_status_class(curr);
-  $(window).scrollTo(curr, { axis: 'y', offset: -150 });
-  showEditFrame(curr, { autofocus: false });
+  $('span.wordhover').removeClass('wordhover');
+  remove_status_highlights();
+  target.addClass('kwordmarked');
+  save_curr_data_order(target);
+  apply_status_class(target);
+  $(window).scrollTo(target, { axis: 'y', offset: -150 });
+  showEditFrame(target, { autofocus: false });
 }
 
 
-let find_non_Ign_or_Wkn = function(currindex, shiftby) {
-  let newindex = currindex + shiftby;
-  while (newindex >= 0 && newindex <= maxindex) {
-    const nextword = words.eq(newindex);
-    const st = nextword.data('status-class');
-    if (st != 'status99' && st != 'status98') {
-      break;
-    }
-    newindex += shiftby;
-  }
-  return newindex;
-};
+/** SENTENCE TRANSLATIONS *************************/
 
-let move_cursor = function(shiftby, e) {
-  const currindex = current_word_index();
-  if (! e.shiftKey) {
-    set_cursor(currindex + shiftby);
+// LUTE_SENTENCE_LOOKUP_URIS is rendered in templates/read/index.html.
+// Hitting "t" repeatedly cycles through the uris.  Moving to a new
+// sentence resets the order.
+
+var LUTE_LAST_SENTENCE_TRANSLATION_TEXT = '';
+var LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX = 0;
+
+/** Cycle through the LUTE_SENTENCE_LOOKUP_URIS.
+ * If the current sentence is the same as the last translation,
+ * move to the next sentence dictionary; otherwise start the cycle
+ * again (from index 0).
+ */
+let _get_translation_dict_index = function(sentence) {
+  const dict_count = LUTE_SENTENCE_LOOKUP_URIS.length;
+  if (dict_count == 0)
+    return 0;
+  let new_index = LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX;
+  if (LUTE_LAST_SENTENCE_TRANSLATION_TEXT != sentence) {
+    // New sentence, start at beginning.
+    new_index = 0;
   }
   else {
-    set_cursor(find_non_Ign_or_Wkn(currindex, shiftby));
+    // Same sentence, next dict.
+    new_index += 1;
+    if (new_index >= dict_count)
+      new_index = 0;
   }
+  LUTE_LAST_SENTENCE_TRANSLATION_TEXT = sentence;
+  LUTE_CURR_SENTENCE_TRANSLATION_DICT_INDEX = new_index;
+  return new_index;
 }
 
 
-let show_translation = function(e) {
+/** Show the translation using the next dictionary. */
+let show_sentence_translation = function(e) {
   tis = get_textitems_spans(e);
   if (tis == null)
     return;
   const sentence = tis.map(s => $(s).text()).join('');
 
-  const userdict = $('#translateURL').text();
-  if (userdict == null || userdict == '')
-    console.log('No userdict for lookup.  ???');
+  if (LUTE_SENTENCE_LOOKUP_URIS.length == 0) {
+    console.log('No sentence translation uris configured.');
+    return;
+  }
 
+  const dict_index = _get_translation_dict_index(sentence);
+  const userdict = LUTE_SENTENCE_LOOKUP_URIS[dict_index];
   // console.log(userdict);
-  const url = userdict.replace('###', encodeURIComponent(sentence));
+
+  const lookup = encodeURIComponent(sentence);
+  const url = userdict.replace('###', lookup);
   if (url[0] == '*') {
     const finalurl = url.substring(1);  // drop first char.
-    const settings = 'width=800, height=400, scrollbars=yes, menubar=no, resizable=yes, status=no';
+    const settings = 'width=800, height=600, scrollbars=yes, menubar=no, resizable=yes, status=no';
     window.open(finalurl, 'dictwin', settings);
   }
   else {
-    top.frames.dictframe.location.href = url;
+    top.frames.wordframe.location.href = url;
+    $('#read_pane_right').css('grid-template-rows', '1fr 0');
   }
 }
 
 
+/** THEMES AND HIGHLIGHTS *************************/
 /* Change to the next theme, and reload the page. */
 function next_theme() {
   $.ajax({
@@ -470,6 +461,12 @@ function next_theme() {
 
 }
 
+function toggleFocus() {
+  const focusChk = document.getElementById("focus");
+  const event = new Event("change");
+  focusChk.checked = !focusChk.checked;
+  focusChk.dispatchEvent(event);
+}
 
 /* Toggle highlighting, and reload the page. */
 function toggle_highlight() {
@@ -494,7 +491,7 @@ function toggle_highlight() {
 
 
 function handle_keydown (e) {
-  if (words.size() == 0) {
+  if ($('span.word').length == 0) {
     // console.log('no words, exiting');
     return; // Nothing to do.
   }
@@ -504,8 +501,6 @@ function handle_keydown (e) {
 
   const kESC = 27;
   const kRETURN = 13;
-  const kHOME = 36;
-  const kEND = 35;
   const kLEFT = 37;
   const kRIGHT = 39;
   const kUP = 38;
@@ -514,6 +509,7 @@ function handle_keydown (e) {
   const kT = 84; // T)ranslate
   const kM = 77; // The(M)e
   const kH = 72; // Toggle H)ighlight
+  const kF = 70; // Toggle F)ocus mode
   const k1 = 49;
   const k2 = 50;
   const k3 = 51;
@@ -524,16 +520,30 @@ function handle_keydown (e) {
 
   map[kESC] = () => start_hover_mode();
   map[kRETURN] = () => start_hover_mode();
-  map[kHOME] = () => set_cursor(0);
-  map[kEND] = () => set_cursor(maxindex);
-  map[kLEFT] = () => move_cursor(-1, e);
-  map[kRIGHT] = () => move_cursor(+1, e);
+
+  // read/index.js has some data rendered at the top of the page.
+  const lang_is_rtl = $('#lang_is_rtl');
+  let left_increment = -1;
+  let right_increment = 1;
+  if (lang_is_rtl == null)
+    console.log("ERROR: missing lang control.");
+  else {
+    const is_rtl = (lang_is_rtl.val().toLowerCase() == "true");
+    if (is_rtl) {
+      left_increment = 1;
+      right_increment = -1;
+    }
+  }
+
+  map[kLEFT] = () => move_cursor(left_increment);
+  map[kRIGHT] = () => move_cursor(right_increment);
   map[kUP] = () => increment_status_for_selected_elements(e, +1);
   map[kDOWN] = () => increment_status_for_selected_elements(e, -1);
   map[kC] = () => handle_copy(e);
-  map[kT] = () => show_translation(e);
+  map[kT] = () => show_sentence_translation(e);
   map[kM] = () => next_theme();
   map[kH] = () => toggle_highlight();
+  map[kF] = () => toggleFocus();
   map[k1] = () => update_status_for_marked_elements(1);
   map[k2] = () => update_status_for_marked_elements(2);
   map[k3] = () => update_status_for_marked_elements(3);
@@ -551,28 +561,6 @@ function handle_keydown (e) {
   }
 }
 
-
-/**
- * post update ajax call, fix the UI.
- */
-function update_selected_statuses(newStatus, elements) {
-  if (!elements) {
-    console.error('Expecting argument `elements` to exist');
-    return;
-  }
-  const newClass = `status${newStatus}`;
-  let update_data_status_class = function (e) {
-    const curr = $(this);
-    ltext = curr.text().toLowerCase();
-    matches = $('span.word').toArray().filter(el => $(el).text().toLowerCase() == ltext);
-    matches.forEach(function (m) {
-      $(m).removeClass('status98 status99 status0 status1 status2 status3 status4 status5 shiftClicked')
-        .addClass(newClass)
-        .attr('data-status-class',`${newClass}`);
-    });
-  };
-  $(elements).each(update_data_status_class)
-}
 
 /**
  * If the term editing form is visible when reading, and a hotkey is hit,
@@ -594,21 +582,53 @@ function update_term_form(el, new_status) {
 
 function update_status_for_marked_elements(new_status) {
   let elements = $('span.kwordmarked').toArray().concat($('span.wordhover').toArray());
-  update_status_for_elements(new_status, elements);
+  let updates = [ make_status_update_hash(new_status, elements) ]
+  post_bulk_update(updates);
 }
 
-function update_status_for_elements(new_status, elements) {
+
+function make_status_update_hash(new_status, elements) {
+  const texts = elements.map(el => $(el).text());
+  return {
+    new_status: new_status,
+    terms: texts
+  }
+}
+
+
+function post_bulk_update(updates) {
+  if (updates.length == 0) {
+    // console.log("No updates.");
+    return;
+  }
+  let elements = $('span.kwordmarked').toArray().concat($('span.wordhover').toArray());
   if (elements.length == 0)
     return;
   const firstel = $(elements[0]);
+  const first_status = updates[0].new_status;
   const langid = firstel.data('lang-id');
-  const texts = elements.map(el => $(el).text());
+  const selected_ids = $('span.kwordmarked').toArray().map(el => $(el).attr('id'));
 
   data = JSON.stringify({
-    langid: langid,
-    terms: texts,
-    new_status: new_status
+    langid: langid, updates: updates
   });
+
+  let re_mark_selected_ids = function() {
+    for (let i = 0; i < selected_ids.length; i++) {
+      let el = $(`#${selected_ids[i]}`);
+      el.addClass('kwordmarked');
+    }
+    if (selected_ids.length > 0)
+      $('span.wordhover').removeClass('wordhover');
+  };
+
+  let reload_text_div = function() {
+    const bookid = $('#book_id').val();
+    const pagenum = $('#page_num').val();
+    const url = `/read/renderpage/${bookid}/${pagenum}`;
+    const repel = $('#thetext');
+    repel.load(url, re_mark_selected_ids);
+  };
 
   $.ajax({
     url: '/term/bulk_update_status',
@@ -617,9 +637,9 @@ function update_status_for_elements(new_status, elements) {
     dataType: 'JSON',
     contentType: 'application/json',
     success: function(response) {
-      update_selected_statuses(new_status, elements);
-      if (texts.length == 1) {
-        update_term_form(firstel, new_status);
+      reload_text_div();
+      if (elements.length == 1) {
+        update_term_form(firstel, first_status);
       }
     },
     error: function(response, status, err) {
@@ -636,54 +656,50 @@ function update_status_for_elements(new_status, elements) {
 
 
 /**
- * Change status using arrow keys for *select* (clicked) elements only,
- * *not* hovered elements.
- *
- * When hovering, clicking an arrow should just scroll the screen, because
- * the user is *kind of passively* viewing content.
- * If the user has clicked on an element (or used arrow keys), they're actively
- * focused on it.
+ * Change status using arrow keys for selected or hovered elements.
  */
 function increment_status_for_selected_elements(e, shiftBy) {
-  const elements = Array.from(document.querySelectorAll('span.kwordmarked'));
-  if (elements.length == 0)
-    return;
-
   // Don't scroll screen.  If screen scrolling happens, then pressing
   // "up" will both scroll up *and* change the status the selected term,
   // which is odd.
   e.preventDefault();
 
-  const validStatuses = ['status0', 'status1', 'status2', 'status3', 'status4', 'status5', 'status99'];
+  const elements = Array.from(document.querySelectorAll('span.kwordmarked, span.wordhover'));
+  if (elements.length == 0)
+    return;
+
+  const statuses = ['status0', 'status1', 'status2', 'status3', 'status4', 'status5', 'status99'];
 
   // Build payloads to update for each unique status that will be changing
-  let payloads = {};
+  let status_elements = statuses.reduce((obj, status) => {
+    obj[status] = [];
+    return obj;
+  }, {});
 
   elements.forEach((element) => {
-    let statusClass = element.dataset.statusClass;
-    
-    if (!statusClass || !validStatuses.includes(statusClass)) return;
+    let s = element.dataset.statusClass ?? 'missing';
+    if (s in status_elements)
+      status_elements[s].push(element);
+  });
 
-    payloads[statusClass] ||= [];
-    payloads[statusClass].push(element);
-  })
+  // Convert map to update hashes.
+  let updates = []
 
-  Object.keys(payloads).forEach((key) => {
-    let originalIndex = validStatuses.indexOf(key);
+  Object.entries(status_elements).forEach(([status, update_elements]) => {
+    if (update_elements.length == 0)
+      return;
 
-    if (originalIndex == -1) return;
-    
-    newIndex = Math.max(0, Math.min((validStatuses.length-1), originalIndex+shiftBy));
+    let status_index = statuses.indexOf(status);
+    let new_index = status_index + shiftBy;
+    new_index = Math.max(0, Math.min((statuses.length-1), new_index));
+    let new_status = Number(statuses[new_index].replace(/\D/g, ''));
 
-    if (newIndex != originalIndex) {
-      const newStatusCode = Number(validStatuses[newIndex].replace(/\D/g, ''));
-
-      // Can't set status to 0, that implies term deletion, which is a different issue
-      // (at the moment).
-      // TODO delete term from reading screen: setting to 0 could equal deleting term.
-      if (newStatusCode != 0) {
-        update_status_for_elements(newStatusCode, payloads[key]);
-      }
+    // Can't set status to 0 (that is for deleted/non-existent terms only).
+    // TODO delete term from reading screen: setting to 0 could equal deleting term.
+    if (new_index != status_index && new_status != 0) {
+      updates.push(make_status_update_hash(new_status, update_elements));
     }
-  })
+  });
+
+  post_bulk_update(updates);
 }
