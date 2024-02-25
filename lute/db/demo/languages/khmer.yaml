@@ -1,0 +1,12 @@
+name: Khmer
+dict_1: "*https://glosbe.com/km/en/###"
+dict_2: "*https://www.kheng.info/search/?query=###"
+sentence_translation: "*https://translate.google.com/?sl=kh&tl=en&text=###&op=translate"
+show_romanization: true
+# right_to_left:
+
+parser_type: khmer
+# character_substitutions:
+split_sentences: ។?៕
+# split_sentence_exceptions:
+word_chars: ក-៹

@@ -1,6 +1,7 @@
 """
 /read endpoints.
 """
+import logging
 
 from datetime import datetime
 from flask import Blueprint, flash, request, render_template, redirect, jsonify
@@ -19,6 +20,9 @@ from lute.models.setting import UserSetting
 from lute.db import db
 
 bp = Blueprint("read", __name__, url_prefix="/read")
+
+LOGGER = logging.getLogger("default")
+LOGGER.setLevel(logging.INFO)
 
 
 def _render_book_page(book, pagenum):

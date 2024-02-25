@@ -36,6 +36,7 @@ dependencies = [
   "hanlp>=2.1.0b55,<3",
   "cachetools>=5.3.2,<6",
   "openepub>=0.0.6,<1",
+  "khmer-nltk==1.6"
   "pypdf>=3.17.4"
 ]
 

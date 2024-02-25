@@ -2,25 +2,22 @@
 
 
 
-https://github.com/fanyingfx/lute-v3/assets/57335844/885fdc68-bf08-41dd-8553-b1d45f9aa9b0
+This repo contains code to add support for Khmer parsing to the original lutev3 project [here](https://github.com/jzohrab/lute-v3).
 
 
+# Starting the project in developer mode
+This fork is still an infant and I don't recommend using your own database with it. I also at the moment only know how to run it in developer mode.
 
-
-This is modified version of [Lute](https://github.com/jzohrab/lute-v3), it supports Chinese, accurately, it's Mandarin.
-
-## Installation and Upgrade
-
-### Installation
-
-At first, you should Install Python and [activate virtual environment](./README_PyPi.md)
-
-After the virtual environment activated, you could use  command
-
+1. You should first go to the project root and activate your python environment
+2. Next create a config file that uses a data directory other than your personal lute data directory
+```bash
+$ bash create_config.sh
 ```
-pip install https://github.com/fanyingfx/lute-v3/releases/download/3.1.2b1/lute3-3.1.2b1-py3-none-any.whl --upgrade
+3. Start the developer server
+```bash
+$ python -m devstart # will use port 5000 by default
+$ python -m devstart --port 5050 # use some other port if you are already running lute
 ```
-to install the lute supporting Chinese.
 
 And you can check the latest version from repo's page
 and replace the link to the latest version link.

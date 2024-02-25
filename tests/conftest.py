@@ -127,6 +127,7 @@ def fixture_test_languages(app_context, demo_yaml_folder):
         "turkish",
         "classical_chinese",
         "mandarin",
+        "khmer",
     ]
     ret = {}
     for lang in langs:
@@ -163,3 +164,8 @@ def fixture_cl_chinese(test_languages):
 @pytest.fixture(name="mandarin")
 def fixture_mc_chinese(test_languages):
     return test_languages["mandarin"]
+
+
+@pytest.fixture(name="khmer")
+def fixture_kh_khmer(test_languages):
+    return test_languages["khmer"]
