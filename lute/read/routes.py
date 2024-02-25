@@ -4,15 +4,19 @@
 
 from datetime import datetime
 from flask import Blueprint, flash, request, render_template, redirect, jsonify
-from lute.read.service import set_unknowns_to_known, start_reading
+from lute.read.service import (
+    get_paragraphs,
+    set_unknowns_to_known,
+)
+from lute.parse.user_dicts import update_user_dict
 from lute.read.forms import TextForm
-from lute.term.model import Repository
+from lute.read.service import start_reading
+from lute.term.model import Repository, find_lang
 from lute.term.routes import handle_term_form
 from lute.models.book import Book, Text
 from lute.models.term import Term as DBTerm
 from lute.models.setting import UserSetting
 from lute.db import db
-
 
 bp = Blueprint("read", __name__, url_prefix="/read")
 
@@ -131,7 +135,13 @@ def term_form(langid, text):
     Create or edit a term.
     """
     repo = Repository(db)
-    term = repo.find_or_new(langid, text)
+    reading = request.args.get("reading", default=None, type=str) or request.form.get(
+        "romanization", ""
+    )
+    if reading.replace("None", "").replace("・", "").strip() == "":
+        reading = ""
+    term = repo.find_or_new(langid, text,None,reading)
+    tokens_raw= request.args.get("textparts", default=None, type=str)
 
     return handle_term_form(
         term,
@@ -139,6 +149,7 @@ def term_form(langid, text):
         "/read/frameform.html",
         render_template("/read/updated.html", term_text=term.text),
         embedded_in_reading_frame=True,
+        tokens_raw=tokens_raw
     )
 
 

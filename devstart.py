@@ -32,7 +32,7 @@ def start(port):
     """
     Start the dev server with reloads on port.
     """
-    config_file = AppConfig.default_config_filename()
+    config_file = AppConfig.default_config_filename(dev=True)
     ac = AppConfig(config_file)
 
     # https://stackoverflow.com/questions/25504149/
@@ -54,13 +54,13 @@ def start(port):
         print(msg)
 
     app = create_app(config_file, output_func=print)
-    app.run(debug=True, port=port)
+    app.run(debug=False, port=port)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Start dev server lute.")
     parser.add_argument(
-        "--port", type=int, default=5000, help="Port number (default: 5000)"
+        "--port", type=int, default=5001, help="Port number (default: 5000)"
     )
     args = parser.parse_args()
     start(args.port)

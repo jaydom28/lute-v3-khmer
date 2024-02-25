@@ -41,6 +41,8 @@ class Term:  # pylint: disable=too-many-instance-attributes
         self.flash_message = None
         self.parents = []
         self.current_image = None
+        self.lemma = None
+        self.reading = None
 
     def __repr__(self):
         return (
@@ -141,7 +143,7 @@ class Repository:
         self._add_to_identity_map(term)
         return term
 
-    def find_or_new(self, langid, text):
+    def find_or_new(self, langid, text, lemma=None, reading=None):
         """
         Return a Term business object for the DBTerm with the langid and text.
         If no match, return a new term with the text and language.
@@ -151,6 +153,8 @@ class Repository:
         """
         t = self.find(langid, text)
         if t is not None:
+            if t.lemma is None:
+                t.lemma = lemma
             return t
 
         spec = self._search_spec_term(langid, text)
@@ -159,8 +163,12 @@ class Repository:
         t.language_id = langid
         t.text = text
         t.text_lc = spec.text_lc
-        t.romanization = spec.language.parser.get_reading(text)
+        if reading:
+            t.romanization = reading
+        else:
+            t.romanization = spec.language.parser.get_reading(text)
         t.original_text = text
+        t.lemma = lemma
 
         return t
 
@@ -259,6 +267,12 @@ class Repository:
             return
         self.db.session.delete(dbt)
 
+    def delete_by_termid(self, termid):
+        dbt = DBTerm.find(termid)
+        if dbt is None:
+            return
+        self.db.session.delete(dbt)
+
     def commit(self):
         """
         Commit everything.
@@ -293,6 +307,7 @@ class Repository:
         t.translation = term.translation
         t.romanization = term.romanization
         t.sync_status = term.sync_status
+        t.lemma = term.lemma
         t.set_current_image(term.current_image)
 
         if term.flash_message is not None:
@@ -467,3 +482,7 @@ class Repository:
         if term is None:
             return []
         return self._get_all_refs(term.children)
+
+
+def find_lang(langid):
+    return Language.find(langid)

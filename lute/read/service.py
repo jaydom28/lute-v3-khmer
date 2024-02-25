@@ -2,6 +2,8 @@
 Reading helpers.
 """
 
+
+from lute.models.setting import UserSetting
 from lute.models.term import Term, Status
 from lute.models.book import Text
 from lute.book.stats import mark_stale

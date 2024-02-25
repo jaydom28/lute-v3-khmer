@@ -7,6 +7,9 @@
       data-text="{{ item.text }}"
       data-status-class="{{ item.status_class }}"
       data-order="{{ item.order }}"
+      data-lemma="{{ item.lemma }}"
+      data-reading="{{ item.romanization or item.reading }}"
 {% if item.wo_id is not none %}
       data-wid="{{ item.wo_id }}"
-{% endif %}>{{ item.html_display_text | safe }}</span>
+{% endif %}><ruby>{{ item.html_display_text | safe }}<rp>(</rp><rt>{% if item.show_reading %}{{  item.romanization or item.reading }}&nbsp{% endif %}</rt><rp>)</rp></ruby>
+</span>

@@ -54,7 +54,7 @@ class RenderableCalculator:
             prevtok = tok
 
     def _get_renderable(
-        self, tokenlocator, terms, texttokens
+            self, tokenlocator, terms, texttokens
     ):  # pylint: disable=too-many-locals
         """
         Return RenderableCandidates that will **actually be rendered**.
@@ -128,6 +128,7 @@ class RenderableCalculator:
         # Step 1.  Map of the token position to the id of the
         # candidate that should be rendered there.
         rendered = {}
+        text_reading = {}
 
         # Step 2 - fill with the original texttokens.
         for tok in texttokens:
@@ -136,8 +137,11 @@ class RenderableCalculator:
             rc.text = tok.token
             rc.pos = tok.order
             rc.is_word = tok.is_word
+            rc.reading = tok.reading
             candidates[rc.id] = rc
             rendered[rc.pos] = rc.id
+            text_reading[tok.token] = tok.reading
+
 
         # 3.  Create candidates for all the terms.
         termcandidates = []
@@ -152,6 +156,8 @@ class RenderableCalculator:
                 rc.pos = texttokens[0].order + loc["index"]
                 rc.length = term.token_count
                 rc.is_word = 1
+                rc.reading = text_reading.get(loc["text"], None) or term.romanization
+
 
                 termcandidates.append(rc)
                 candidates[rc.id] = rc
@@ -199,7 +205,7 @@ class RenderableCalculator:
 
         return items
 
-    def main(self, language, words, texttokens):
+    def main(self, language, words, texttokens) -> 'RenderableCandidate':
         """
         Main entrypoint.
 
@@ -218,7 +224,7 @@ class RenderableCalculator:
         return items
 
     @staticmethod
-    def get_renderable(lang, words, texttokens):
+    def get_renderable(lang, words, texttokens) -> 'RenderableCandidate':
         "Convenience method, calls main."
         rc = RenderableCalculator()
         return rc.main(lang, words, texttokens)
@@ -252,6 +258,7 @@ class RenderableCandidate:  # pylint: disable=too-many-instance-attributes
         self.length: int = 1
         self.is_word: int = None
         self.render: bool = True
+        self.reading = ""
 
     def __repr__(self):
         parts = [f"pos {self.pos}", f"render {self.render}" f"(id {self.id})"]
@@ -266,7 +273,7 @@ class RenderableCandidate:  # pylint: disable=too-many-instance-attributes
     def order_end(self) -> int:
         return self.pos + self.length - 1
 
-    def make_text_item(self, p_num: int, se_id: int, lang: Language):
+    def make_text_item(self, p_num: int, se_id: int, lang: Language, show_reading=False) -> 'TextItem':
         """
         Create a TextItem for final rendering.
         """
@@ -281,6 +288,9 @@ class RenderableCandidate:  # pylint: disable=too-many-instance-attributes
         t.se_id = se_id
         t.is_word = self.is_word
         t.text_length = len(self.text)
+        if t.reading.strip() == "" and self.reading and self.reading.strip() != "":
+            t.reading = self.reading
+        t.show_reading = show_reading
         return t
 
 
@@ -335,7 +345,7 @@ class TokenLocator:
             matchpos = match[1]
 
             # print(f"found match \"{matchtext}\" len={matchlen} pos={matchpos}")
-            original_subject_text = subj[matchpos : matchpos + matchlen]
+            original_subject_text = subj[matchpos: matchpos + matchlen]
             zws = "\u200B"
             t = original_subject_text.lstrip(zws).rstrip(zws)
             index = self.get_count_before(subj, matchpos)
@@ -409,7 +419,6 @@ class TextItem:  # pylint: disable=too-many-instance-attributes
         self.se_id: int
         self.is_word: int
         self.text_length: int
-
         self.term = term
         self.wo_id = term.id if term is not None else None
         self.wo_status = term.status if term is not None else None
@@ -420,6 +429,12 @@ class TextItem:  # pylint: disable=too-many-instance-attributes
         # Also, if there is a Term entity but it's mostly empty, a
         # tooltip isn't useful.
         self._show_tooltip: bool = None
+        self.reading: str = (
+            term.romanization
+            if term is not None and term.romanization is not None
+            else ""
+        )
+        self.show_reading = False
 
         # The flash message can be None, so we need an extra flag
         # to determine if it has been loaded or not.
@@ -441,9 +456,9 @@ class TextItem:  # pylint: disable=too-many-instance-attributes
             if cterm is None:
                 return False
             no_extra = (
-                cterm.translation is None
-                and cterm.romanization is None
-                and cterm.get_current_image() is None
+                    cterm.translation is None
+                    and cterm.romanization is None
+                    and cterm.get_current_image() is None
             )
             return not no_extra
 
@@ -514,9 +529,9 @@ class TextItem:  # pylint: disable=too-many-instance-attributes
         ]
 
         tooltip = (
-            st not in (Status.WELLKNOWN, Status.IGNORED)
-            or self.show_tooltip
-            or self.flash_message is not None
+                st not in (Status.WELLKNOWN, Status.IGNORED)
+                or self.show_tooltip
+                or self.flash_message is not None
         )
         if tooltip:
             classes.append("showtooltip")

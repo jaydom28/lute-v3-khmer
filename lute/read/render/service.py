@@ -5,6 +5,7 @@ Reading rendering helpers.
 import re
 from sqlalchemy import text as sqltext
 
+from lute.models.setting import UserSetting
 from lute.models.term import Term
 from lute.parse.base import ParsedToken
 from lute.read.render.renderable_calculator import RenderableCalculator
@@ -128,6 +129,12 @@ def get_paragraphs(s, language):
             curr_para.append(t)
     if len(curr_para) > 0:
         paragraphs.append(curr_para)
+    terms = find_all_Terms_in_string(s, language)
+    if UserSetting.key_exists("show_reading") and language.show_romanization:
+        show_reading = bool(int(UserSetting.get_value("show_reading")))
+    else:
+        show_reading = False
+
 
     def make_RenderableSentence(pnum, sentence_num, tokens, terms):
         """
@@ -139,7 +146,8 @@ def get_paragraphs(s, language):
         renderable = RenderableCalculator.get_renderable(
             language, terms, sentence_tokens
         )
-        textitems = [i.make_text_item(pnum, sentence_num, language) for i in renderable]
+        textitems = [i.make_text_item(pnum, sentence_num, language,show_reading) for i in renderable]
+
         ret = RenderableSentence(sentence_num, textitems)
         return ret
 

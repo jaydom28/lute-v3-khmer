@@ -27,7 +27,14 @@ class ParsedToken:
         ParsedToken.cls_sentence_number = 0
         ParsedToken.cls_order = 0
 
-    def __init__(self, token: str, is_word: bool, is_end_of_sentence: bool = False):
+    def __init__(
+        self,
+        token: str,
+        is_word: bool,
+        is_end_of_sentence: bool = False,
+        lemma=None,
+        reading="",
+    ):
         self.token = token
         self.is_word = is_word
         self.is_end_of_sentence = is_end_of_sentence
@@ -42,6 +49,8 @@ class ParsedToken:
         # sentence.
         if self.is_end_of_sentence:
             ParsedToken.cls_sentence_number += 1
+        self.lemma = lemma
+        self.reading = reading
 
     def __repr__(self):
         attrs = [
@@ -110,6 +119,7 @@ class AbstractParser(ABC):
     """
     Abstract parser, inherited from by all parsers.
     """
+    using_user_dict=False
 
     @classmethod
     def is_supported(cls):
@@ -150,3 +160,11 @@ class AbstractParser(ABC):
         but some (like Turkish) need special handling.
         """
         return text.lower()
+
+
+    def update_dict(self, tokens):
+        pass
+
+
+    def delete_from_user_dict(self, k, v):
+        pass

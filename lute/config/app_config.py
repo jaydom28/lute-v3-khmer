@@ -51,6 +51,11 @@ class AppConfig:  # pylint: disable=too-many-instance-attributes
         self.datapath = config.get("DATAPATH", self._get_appdata_dir())
         self.userimagespath = os.path.join(self.datapath, "userimages")
         self.useraudiopath = os.path.join(self.datapath, "useraudio")
+        self.userchinesedict = os.path.join(self.datapath, "userchinesedict.txt")
+        self.userunidic = {
+            "s": os.path.join(self.datapath, "unidic-csj"),
+            "w": os.path.join(self.datapath, "unidic-cwj"),
+        }
         self.temppath = os.path.join(self.datapath, "temp")
         self.dbfilename = os.path.join(self.datapath, self.dbname)
 
@@ -82,7 +87,9 @@ class AppConfig:  # pylint: disable=too-many-instance-attributes
         return os.path.dirname(os.path.realpath(__file__))
 
     @staticmethod
-    def default_config_filename():
+    def default_config_filename(dev=False):
         "Return the path to the default configuration file."
         thisdir = AppConfig.configdir()
+        if dev:
+            return os.path.join(thisdir, "config.dev.yml")
         return os.path.join(thisdir, "config.yml")

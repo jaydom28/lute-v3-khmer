@@ -104,6 +104,7 @@ def new():
 
     form = NewBookForm(obj=b)
     form.language_id.choices = lute.utils.formutils.language_choices()
+    max_page_tokens = form.data['max_page_tokens']
     repo = Repository(db)
 
     if form.validate_on_submit():

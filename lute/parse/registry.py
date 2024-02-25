@@ -4,11 +4,12 @@ Parser registry.
 List of available parsers.
 """
 
+
 from lute.parse.base import AbstractParser
 from lute.parse.space_delimited_parser import SpaceDelimitedParser, TurkishParser
 from lute.parse.mecab_parser import JapaneseParser
 from lute.parse.character_parser import ClassicalChineseParser
-
+from lute.parse.mandarin_parser import MandarinParser
 
 # List of ALL parsers available, not necessarily all supported.
 # This design feels fishy, but it suffices for now.
@@ -17,7 +18,9 @@ parsers = {
     "turkish": TurkishParser,
     "japanese": JapaneseParser,
     "classicalchinese": ClassicalChineseParser,
+    "mandarin": MandarinParser,
 }
+parser_instances = {}
 
 
 def _supported_parsers():
@@ -32,8 +35,12 @@ def _supported_parsers():
 def get_parser(parser_name) -> AbstractParser:
     "Return the supported parser with the given name."
     if parser_name in _supported_parsers():
+        if parser_name in parser_instances:
+            return parser_instances[parser_name]
         pclass = parsers[parser_name]
-        return pclass()
+        parser_instances[parser_name] = pclass()
+        return parser_instances[parser_name]
+
     raise ValueError(f"Unknown parser type '{parser_name}'")
 
 

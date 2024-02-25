@@ -6,7 +6,7 @@ const volumeLine = document.querySelector(".volume");
 const playBtn = document.querySelector("#play-btn");
 const durationElement = document.querySelector(".duration-container .duration");
 const currentTimeElement = document.querySelector(
-  ".duration-container .current-time"
+    ".duration-container .current-time"
 );
 const rewindButton = document.querySelector("#rewind-btn");
 const ffButton = document.querySelector("#ff-btn");
@@ -82,9 +82,9 @@ player.addEventListener("pause", function () {
 
 // Listening for form opened event created by lute/templates/term/_form.html.
 window.addEventListener("message", function(event) {
-    if (event.data.event === "LuteTermFormOpened") {
-        player.pause();
-    }
+  if (event.data.event === "LuteTermFormOpened") {
+    player.pause();
+  }
 });
 
 player.addEventListener("play", function () {
@@ -254,7 +254,7 @@ let addBookmarkMarker = function(currtime) {
   marker.classList.add(marker_classname_from_time(currtime));
   bookmarkContainer.appendChild(marker);
   marker.style.cssText =
-    `position: absolute;
+      `position: absolute;
      left: ${timeToPercent(currtime)}%;
      height: calc(var(--timeline-height) + 1px);
      top: 0;
@@ -376,7 +376,7 @@ function jumpToBookmark(oper) {
     // console.log('not found');
     return;
   }
-  
+
   const m = bookmarksArray[ind];
   // console.log(`ind is ${ind} => bookmarksArray entry ${m}`);
   timeline.value = m;

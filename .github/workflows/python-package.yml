@@ -1,0 +1,48 @@
+on:
+  push:
+    # A branch github-ci-updates can be created and used for ci
+    # experiments and tweaks.
+    branches: [ "chinese_new" ]
+  workflow_dispatch:
+jobs:
+    
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+          cache: 'pip' # caching pip dependencies
+
+      - run: pip install flit
+      - name: Build package
+        run: |
+            flit build
+      - name: Set tag var
+        id: vars
+        run: |
+          ver=$(ls dist | grep '.*whl' | awk -F '-' '{print $2}')
+          if [  $(git tag -l "$ver") ]; then
+            echo "Targe version exists."
+            echo "build=0" >> $GITHUB_OUTPUT
+            echo "version=$ver" >> $GITHUB_OUTPUT
+          else
+            echo "Target version is not built."
+            echo "build=1" >> $GITHUB_OUTPUT
+            echo "version=$ver" >> $GITHUB_OUTPUT
+
+          fi
+        
+      - name: Create Release
+        if: steps.vars.outputs.build == '1'
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          body: lute ${{ steps.vars.outputs.version  }}
+          draft: false
+          tag_name: ${{ steps.vars.outputs.version }}
+          # 因为 softprops/action-gh-releas 还没加 make_latest 选项，所以先用 prerelease 标记
+          # 相关 PR：https://github.com/softprops/action-gh-release/pull/304
+          prerelease: ${{ !steps.vars.outputs.version }}
+          files: |
+            dist/*.whl

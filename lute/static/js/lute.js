@@ -97,6 +97,10 @@ function showEditFrame(el, extra_args = {}) {
   const lid = parseInt(el.data('lang-id'));
 
   let text = extra_args.textparts ?? [ el.data('text') ];
+  let lemma = extra_args.lemma ?? [el.data('lemma')];
+  let reading = extra_args.reading ?? [el.data('reading')]
+  extra_args.lemma = lemma;
+  extra_args.reading = reading
   const sendtext = text.join('');
 
   let extras = Object.entries(extra_args).
@@ -274,15 +278,30 @@ function select_ended(e) {
     return;
   }
 
-  const textparts = selected.toArray().map((el) => $(el).text());
+  const textparts = selected.toArray().map((el) => $(el).data('text'));
   const text = textparts.join('').trim();
+  const lemmaparts= selected.toArray().map((el)=>{
+    let lemma= $(el).data('lemma')
+    lemma= lemma==='None'? $(el).data('text'): lemma
+    return lemma
+
+  })
+  const lemma = lemmaparts.join('').trim();
+  const readingparts= selected.toArray().map((el)=>{
+    let reading= $(el).data('reading')
+    if (reading===''){
+      reading=$(el).data('text')}
+    return reading
+
+  })
+  const reading= readingparts.join('').trim();
   if (text.length > 250) {
     alert(`Selections can be max length 250 chars ("${text}" is ${text.length} chars)`);
     start_hover_mode();
     return;
   }
 
-  showEditFrame(selection_start_el, { textparts: textparts });
+  showEditFrame(selection_start_el, { textparts: textparts, lemma: lemma, reading: reading});
   selection_start_el = null;
 }
 
@@ -313,7 +332,7 @@ let handle_copy = function(e) {
 }
 
 let copy_text_to_clipboard = function(textitemspans) {
-  const copytext = textitemspans.map(s => $(s).text()).join('');
+  const copytext = textitemspans.map(s => $(s).data('text')).join('');
 
   // console.log('copying ' + copytext);
   var textArea = document.createElement("textarea");
@@ -413,7 +432,7 @@ let show_sentence_translation = function(e) {
   tis = get_textitems_spans(e);
   if (tis == null)
     return;
-  const sentence = tis.map(s => $(s).text()).join('');
+  const sentence = tis.map(s => $(s).data('text')).join('');
 
   if (LUTE_SENTENCE_LOOKUP_URIS.length == 0) {
     console.log('No sentence translation uris configured.');
@@ -488,6 +507,25 @@ function toggle_highlight() {
     }
   });
 }
+function toggle_reading() {
+  $.ajax({
+    url: '/theme/toggle_reading',
+    type: 'post',
+    dataType: 'JSON',
+    contentType: 'application/json',
+    success: function(response) {
+      location.reload();
+    },
+    error: function(response, status, err) {
+      const msg = {
+        response: response,
+        status: status,
+        error: err
+      };
+      console.log(`failed: ${JSON.stringify(msg, null, 2)}`);
+    }
+  });
+}
 
 
 function handle_keydown (e) {
@@ -510,6 +548,7 @@ function handle_keydown (e) {
   const kM = 77; // The(M)e
   const kH = 72; // Toggle H)ighlight
   const kF = 70; // Toggle F)ocus mode
+  const kP = 80; // Toggle P)ronunciation
   const k1 = 49;
   const k2 = 50;
   const k3 = 51;
@@ -544,6 +583,7 @@ function handle_keydown (e) {
   map[kM] = () => next_theme();
   map[kH] = () => toggle_highlight();
   map[kF] = () => toggleFocus();
+  map[kP] = () => toggle_reading();
   map[k1] = () => update_status_for_marked_elements(1);
   map[k2] = () => update_status_for_marked_elements(2);
   map[k3] = () => update_status_for_marked_elements(3);
@@ -588,7 +628,7 @@ function update_status_for_marked_elements(new_status) {
 
 
 function make_status_update_hash(new_status, elements) {
-  const texts = elements.map(el => $(el).text());
+  const texts = elements.map(el => $(el).data('text'));
   return {
     new_status: new_status,
     terms: texts
@@ -607,9 +647,15 @@ function post_bulk_update(updates) {
   const firstel = $(elements[0]);
   const first_status = updates[0].new_status;
   const langid = firstel.data('lang-id');
+  const texts = elements.map(el => $(el).data('text'));
+  const reading = elements.map(el => $(el).data('reading'));
+
   const selected_ids = $('span.kwordmarked').toArray().map(el => $(el).attr('id'));
 
   data = JSON.stringify({
+    langid: langid,
+    terms: texts,
+    reading: reading,
     langid: langid, updates: updates
   });
 

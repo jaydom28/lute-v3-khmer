@@ -21,6 +21,7 @@ from lute.term.model import Repository, Term
 from lute.db import db
 from lute.term.forms import TermForm
 import lute.utils.formutils
+from lute.parse.user_dicts import delete_from_user_dict, update_user_dict
 
 bp = Blueprint("term", __name__, url_prefix="/term")
 
@@ -107,7 +108,12 @@ def export_terms():
 
 
 def handle_term_form(
-    term, repo, form_template_name, return_on_success, embedded_in_reading_frame=False
+    term,
+    repo,
+    form_template_name,
+    return_on_success,
+    embedded_in_reading_frame=False,
+    tokens_raw=None,
 ):
     """
     Handle a form post.
@@ -127,6 +133,16 @@ def handle_term_form(
     form.language_id.choices = lute.utils.formutils.language_choices()
 
     if form.validate_on_submit():
+        if tokens_raw:
+            multi_term = tokens_raw.replace(",", "")
+            tokens = tokens_raw.split(",")
+            d = {multi_term: tokens}
+            # lang = find_lang(langid)
+            lang = term.language
+            update_user_dict(lang, d)
+            term_old = repo.find(lang.id, multi_term)
+            if term_old is not None:
+                repo.delete_by_termid(term_old.id)
         form.populate_obj(term)
 
         # parents_list_data = request.form.get("parentslist", "")
@@ -254,8 +270,16 @@ def bulk_update_status():
 
     data = request.get_json()
     language_id = int(data.get("langid"))
+    # new_status = int(data.get("new_status"))
+    # readings = data.get('reading')
     updates = data.get("updates")
 
+    repo = Repository(db)
+    # for t,reading in zip(terms,readings):
+    #     term = repo.find_or_new(language_id, t)
+    #     term.status = new_status
+    #     term.romanization = reading
+    #     repo.add(term)
     for u in updates:
         new_status = int(u.get("new_status"))
         terms = u.get("terms")
@@ -308,6 +332,7 @@ def delete(termid):
     """
     repo = Repository(db)
     term = repo.load(termid)
-    repo.delete(term)
+    repo.delete_by_termid(termid)
+    delete_from_user_dict(term)
     repo.commit()
     return redirect("/term/index", 302)

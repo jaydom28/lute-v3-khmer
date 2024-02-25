@@ -153,7 +153,8 @@ class Language(
 
     @property
     def parser(self):
-        return get_parser(self.parser_type)
+        _parser = get_parser(self.parser_type)
+        return _parser
 
     @property
     def is_supported(self):
