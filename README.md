@@ -26,7 +26,7 @@ $ brew install pyenv
 ```
 
 ### Setting up the virtual environment using pyenv
-Execute the following commands from within this project repo
+Execute the following commands from this project's root
 ```
 $ pyenv install 3.9.2               # Install python 3.9.2 using pyenv
 $ pyenv virtualenv 3.9.2 lute_khmer # Create a new env "lute_khmer" which uses python 3.9.2
@@ -44,7 +44,7 @@ $ bash create_config.sh
 ```
 3. Start the server
 ```bash
-$ python -m lute.main --port 5050 # If no port is provided, port 5000 will be used by default
+$ python -m lute.main --port 5050   # If no port is provided, port 5000 will be used by default
 ```
 
 # License
