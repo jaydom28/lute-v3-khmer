@@ -12,7 +12,7 @@ This repo contains code to add support for Khmer parsing to the original lutev3 
 ![Lute v3 demo](https://github.com/jzohrab/lute-manual/assets/1637133/7e7f5f66-20bb-4e94-a11c-7b7ffc43255a)
 
 ## Setting up a virtual environment
-I recommend setting up a virtual environment for python and running lute from within the virtual environment. My favorite one is pyenv
+I recommend setting up a virtual environment for python and running lute from within the virtual environment. My favorite one virtual environment manager is [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation)
 
 ### Installing pyenv
 #### Installing pyenv on debian
