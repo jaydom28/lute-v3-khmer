@@ -1,60 +1,52 @@
-# Lute v3 with chinese support
+# Lute v3
+This is my personal branch that I use which incorporates both khmer parsing as well as mandarin parsing from Fanying's fork of this project.
 
+[![tests](https://github.com/jzohrab/lute_v3/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jzohrab/lute_v3/actions/workflows/ci.yml?query=branch%3Amaster)
+[![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+[![coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/jzohrab/a15001ec2ff889f7be0b553df9881566/raw/covbadge.json)](https://github.com/jzohrab/lute_v3/actions/workflows/ci.yml?query=branch%3Amaster)
+[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/CzFUQP5m8u)
 
 
 This repo contains code to add support for Khmer parsing to the original lutev3 project [here](https://github.com/jzohrab/lute-v3).
 
+![Lute v3 demo](https://github.com/jzohrab/lute-manual/assets/1637133/7e7f5f66-20bb-4e94-a11c-7b7ffc43255a)
 
-# Starting the project in developer mode
-This fork is still an infant and I don't recommend using your own database with it. I also at the moment only know how to run it in developer mode.
+## Setting up a virtual environment
+I recommend setting up a virtual environment for python and running lute from within the virtual environment. My favorite one is pyenv
+
+### Installing pyenv
+#### Installing pyenv on debian
+```bash
+$ curl https://pyenv.run | bash
+```
+
+#### Install pyenv on macos
+```bash
+$ brew install pyenv
+```
+
+### Setting up the virtual environment using pyenv
+Execute the following commands from this project's root
+```
+$ pyenv install 3.9.2               # Install python 3.9.2 using pyenv
+$ pyenv virtualenv 3.9.2 lute_khmer # Create a new env "lute_khmer" which uses python 3.9.2
+$ pyenv local lute_khmer            # Creates a special file called ".python-version" which automatically sets this
+                                    # environment when entering this directory
+```
+
+## Starting the server
+This fork is still an infant and I don't recommend using your own database with it.
 
 1. You should first go to the project root and activate your python environment
-2. Next create a config file that uses a data directory other than your personal lute data directory
+2. Next create a config file that uses a data directory other than your personal lute data directory, or execute the following script to create a config which creates a data folder in the project directory
 ```bash
 $ bash create_config.sh
 ```
-3. Start the developer server
+3. Start the server
 ```bash
-$ python -m devstart # will use port 5000 by default
-$ python -m devstart --port 5050 # use some other port if you are already running lute
+$ python -m lute.main --port 5050   # If no port is provided, port 5000 will be used by default
 ```
 
-And you can check the latest version from repo's page
-and replace the link to the latest version link.
-
-### Upgrade
-
-
-
-https://github.com/fanyingfx/lute-v3/assets/57335844/ca991279-2643-4256-bbd9-43220979b6ef
-
-
-
-## Migration
-Because of some big change in the codebase, some features may not add to the lute.
-I am also working on adding Chinese support to original lute, but need some time to find a suitable solution to not make a big change in Lute's code.
-
-The database is full compatible with lute's db, but I also recommend you to create a new database to use.
-
-If you want to migrate previous lute to this version, you can copy your previous database and then in this version of lute's Language Setting,
-change the Parse as to Mandarin.
-![image](https://github.com/fanyingfx/lute-v3/assets/57335844/7ce900cb-fd09-4962-9214-37c45762ae41)
-
-
-
-## User Defined Dictionary
-Another thing, it supports the user defined Chinese words dictionary to make parsed result more correct.
-after start the lute and mark some terms in reading, then in the lute's data folder you can find a file `mandarin.user_dict.txt`.
-in the file: 
-```
-竹条,编 // it means you make the parser always pase "竹条编" as "竹条" and "编", this is for multiple-words terms
-珍珠鸟 // it mean parser will parse 珍珠鸟 as one terms
-```
-You can also add your define terms in the file , only Chinese  with English comma ',' not Chinese's comma '，'
-
-
-
-## 
-You can reach me by email: `fanyingfx@outlook.com`.
-or find me in the Lute Discord @fanyingfx and send me any problem in the *Mandarin parser fork issue?* Thread about the Chinese forked Lute issues.
-
+# License
+Lute uses the MIT license: [LICENSE](./LICENSE.txt)
