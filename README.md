@@ -43,7 +43,11 @@ This fork is still an infant and I don't recommend using your own database with 
 ```bash
 $ bash create_config.sh
 ```
-3. Start the server
+3. Install needed python packages with `pip`
+```bash
+$ pip install -r requirements.txt
+```
+4. Start the server
 ```bash
 $ python -m lute.main --port 5050   # If no port is provided, port 5000 will be used by default
 ```
