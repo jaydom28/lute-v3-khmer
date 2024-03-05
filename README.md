@@ -11,20 +11,41 @@ This repo contains code to add support for Khmer parsing to the original lutev3 
 
 ![Lute v3 demo](https://github.com/jzohrab/lute-manual/assets/1637133/7e7f5f66-20bb-4e94-a11c-7b7ffc43255a)
 
-# Starting the project in developer mode
-This fork is still an infant and I don't recommend using your own database with it. I also at the moment only know how to run it in developer mode.
+## Setting up a virtual environment
+I recommend setting up a virtual environment for python and running lute from within the virtual environment. My favorite one is pyenv
+
+### Installing pyenv
+#### Installing pyenv on debian
+```bash
+$ curl https://pyenv.run | bash
+```
+
+#### Install pyenv on macos
+```bash
+$ brew install pyenv
+```
+
+### Setting up the virtual environment using pyenv
+Execute the following commands from within this project repo
+```
+$ pyenv install 3.9.2               # Install python 3.9.2 using pyenv
+$ pyenv virtualenv 3.9.2 lute_khmer # Create a new env "lute_khmer" which uses python 3.9.2
+$ pyenv local lute_khmer            # Creates a special file called ".python-version" which automatically sets this
+                                    # environment when entering this directory
+```
+
+## Starting the server
+This fork is still an infant and I don't recommend using your own database with it.
 
 1. You should first go to the project root and activate your python environment
-2. Next create a config file that uses a data directory other than your personal lute data directory
+2. Next create a config file that uses a data directory other than your personal lute data directory, or execute the following script to create a config which creates a data folder in the project directory
 ```bash
 $ bash create_config.sh
 ```
-3. Start the developer server
+3. Start the server
 ```bash
-$ python -m devstart # will use port 5000 by default
-$ python -m devstart --port 5050 # use some other port if you are already running lute
+$ python -m lute.main --port 5050 # If no port is provided, port 5000 will be used by default
 ```
 
 # License
-
 Lute uses the MIT license: [LICENSE](./LICENSE.txt)
