@@ -1,22 +1,15 @@
 """
-Default using jieba to parse Chinese.
-https://github.com/fxsjy/jieba
+Uses khmernltk to parse khmer words as tokens
+https://github.com/VietHoang1512/khmer-nltk
 """
 from typing import List
 from functools import lru_cache
 import logging
-# import jieba
 
 import khmernltk as kh
 
 from lute.parse.base import AbstractParser
 from lute.parse.base import ParsedToken
-
-# jieba.setLogLevel(logging.INFO)
-
-CHINESE_PUNCTUATIONS = (
-    r"！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏.\n"
-)
 
 
 KH_SYMBOLS = kh.utils.constants.KHSYM.union(kh.utils.constants.KHNUMBER)
@@ -44,12 +37,6 @@ class KhmerParser(AbstractParser):
             is_word = tok not in KH_SYMBOLS
             para_result.append((tok, is_word))
 
-        """
-        for tok in MandarinParser._seg(para_text):
-            is_word = tok not in CHINESE_PUNCTUATIONS
-            para_result.append((tok, is_word))
-        """
-
         return para_result
 
     @lru_cache()
@@ -64,8 +51,8 @@ class KhmerParser(AbstractParser):
             para = para.strip()
             tokens.extend(self.parse_para(para))
             tokens.append(["¶", False])
-        # Remove the trailing ¶
-        # by stripping it from the result
+
+        # Remove the trailing ¶ by stripping it from the result
         tokens.pop()
 
         return [ParsedToken(tok, is_word, tok == "¶") for tok, is_word in tokens]
