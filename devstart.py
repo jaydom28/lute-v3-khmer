@@ -26,6 +26,7 @@ from lute.config.app_config import AppConfig
 
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
+LOGGER = logging.getLogger(__name__)
 
 
 def start(port):
@@ -58,6 +59,7 @@ def start(port):
 
 
 if __name__ == "__main__":
+    LOGGER.info("Starting app now")
     parser = argparse.ArgumentParser(description="Start dev server lute.")
     parser.add_argument(
         "--port", type=int, default=5001, help="Port number (default: 5000)"

@@ -1,9 +1,11 @@
 """
 Book domain objects.
 """
+import logging
 
 from lute.models.book import Book as DBBook, BookTag
 from lute.models.language import Language
+from lute.termimport.service import import_file
 
 
 class Book:  # pylint: disable=too-many-instance-attributes
@@ -28,6 +30,44 @@ class Book:  # pylint: disable=too-many-instance-attributes
 
     def add_tag(self, tag):
         self.book_tags.append(tag)
+
+
+def read_csv_terms(file_path, delimiter=","):
+    pass 
+
+def cant_find(term: str):
+    return True
+
+def add_mandarin_definitions(tokens: list[str]):
+    logging.info("Adding definition for non-existant mandarin definitions")
+    new_tokens = [t for t in tokens if cant_find(t)]
+    if not new_tokens:
+        logging.info("No new tokens to add")
+        return True
+
+    logging.info(f"Found the following new tokens: {new_tokens}")
+
+    # Iterate through giant master CSV file
+    # if the term of the line is in the new_tokens list, then add the line to a temp csv
+    new_entries = []
+    giant_csv = []
+    for entry in giant_csv:
+        if entry["term"] not in new_tokens:
+            continue
+        new_entries.append(entry["term"])
+
+    # Write to temporary CSV file and import it
+    if not new_entries:
+        logging.info("No new terms to add, doing nothing")
+        return False
+    tmp_file = "temp.csv"
+    logging.info("Writing the following terms to a file: {new_terms}")
+    breakpoint()
+    return True
+
+def add_russian_definitions(tokens):
+    logging.info("Adding definition for non-existant russian definitions")
+    return False
 
 
 class Repository:
@@ -58,6 +98,24 @@ class Repository:
         """
         dbbook = self._build_db_book(book)
         self.db.session.add(dbbook)
+        return dbbook
+        
+        # All this code is related to the definition auto-adder
+        logging.info("Execute some logic here to parse the tokens and add them to the db")
+        _language_finders = {
+            "Mandarin": add_mandarin_definitions,
+            "Russian": add_russian_definitions,
+        }
+        term_function = _language_finders.get(dbbook.language.name, None)
+        if term_function is None:
+            return dbbook
+
+        for page in dbbook.texts:
+            parsed_tokens = dbbook.language.get_parsed_tokens(page.text)
+            term_function(parsed_tokens)
+            breakpoint()
+
+        # End of definition auto-adder code
         return dbbook
 
     def delete(self, book):

@@ -11,14 +11,18 @@ python -m lute.main --port 5001
 import os
 import argparse
 import shutil
+import sys
 import logging
+
 from waitress import serve
 from lute.app_factory import create_app
 from lute.config.app_config import AppConfig
 
+
 logging.getLogger("waitress.queue").setLevel(logging.ERROR)
 logging.getLogger("natto").setLevel(logging.CRITICAL)
 logging.getLogger("default").setLevel(logging.INFO)
+logging.basicConfig(filename="lute.log",level=logging.INFO)
 
 
 def _print(s):
@@ -110,6 +114,7 @@ if __name__ == "__main__":
         help="Path to override config file.  Uses lute/config/config.yml if not set.",
     )
     try:
+        logging.info("hey there")
         _start(parser.parse_args())
     except Exception as e:  # pylint: disable=broad-exception-caught
         print("\n")

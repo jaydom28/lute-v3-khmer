@@ -6,9 +6,19 @@ import click
 from flask import Blueprint
 
 from lute.cli.language_term_export import generate_file
+from lute.cli.fill_terms import fill_missing_terms
 
 bp = Blueprint("cli", __name__)
 
+@bp.cli.command("fill_terms")
+@click.argument("book_id")
+def cmd_fill_terms(book_id):
+    """
+    Takes in a book ID and fills in the 
+    """
+    print(f"Filling in unknown terms for book: {book_id}")
+    print(type(int(book_id)))
+    return fill_missing_terms(book_id)
 
 @bp.cli.command("hello")
 def hello():
