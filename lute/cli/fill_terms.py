@@ -32,8 +32,8 @@ from lute.book.model import Book, Repository
 def fill_missing_terms(book_id):
     logging.info("Execute some logic here to parse the tokens and add them to the db")
     csv_language_dict = {
-        "Mandarin": "/home/justin/Documents/Projects/language_toolbox/cc_cdict/lute_terms.csv",
-        "Russian": "/home/justin/Documents/Projects/language_toolbox/cc_cdict/lute_russian_terms.csv",
+        "Mandarin": "/home/justin/Documents/Repos/language_toolbox/cc_cdict/lute_terms.csv",
+        # "Russian": "/home/justin/Documents/Projects/language_toolbox/cc_cdict/lute_russian_terms.csv",
     }
     book = DBBook.find(book_id)
     if book.language.name not in csv_language_dict:
