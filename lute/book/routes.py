@@ -204,7 +204,7 @@ def new():
                 logging.info(f"Got these tokens: {parsed_tokens}")
                 parsed_tokens = _get_new_terms(book.language_id, parsed_tokens)
                 logging.info(f"The following tokens are new: {parsed_tokens}")
-                result = _add_terms("/home/justin/Documents/Projects/language_toolbox/cc_cdict/lute_terms.csv",
+                result = _add_terms("/home/justin/Documents/Repos/language_toolbox/cc_cdict/lute_terms.csv",
                                     book.language_id, parsed_tokens)
                 logging.info("Attempted to add tokens")
                 parsed_tokens = _get_new_terms(book.language_id, parsed_tokens)
